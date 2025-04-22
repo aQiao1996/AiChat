@@ -1,0 +1,10 @@
+@import "normalize.css";
+@import "tailwindcss";
+/* 天塌啦 新版本不在需要 tailwind.config.js 但是目前还支持 @config 引入 */
+/* https://www.youtube.com/watch?v=bupetqS1SMU */
+/* https://javascript.plainenglish.io/no-tailwind-config-js-in-tailwind-css-v4-heres-what-changed-97bb277eeacd */
+@config "../../../tailwind.config.js";
+/* 新版本通过覆盖 css 默认变量进行设置 如 */
+/* @theme {
+  --spacing: 1px;
+} */
