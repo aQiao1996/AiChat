@@ -15,6 +15,27 @@ const initialState: IChatStore = {
       role: "assistant",
       content: "Hi~ 我是**胖虎** 您身边的智能助手，可以为你答疑解惑、精读文档、尽情创作 让胖虎助您轻松工作，多点生活。",
     },
+    {
+      role: "assistant",
+      content: `
+~~~js
+console.log('愿为高帝牵马坠蹬、赴汤蹈火')
+~~~
+      `,
+    },
+    {
+      role: "user",
+      content: `
+# 你能做什么？
+- 代码生成
+  > 代码生啛啛喳喳
+- 代码优化
+  > - 代码优化
+- 代码注释
+- 代码重构
+- 代码调试
+      `,
+    },
   ],
   model: "deepseek-v3",
 };
