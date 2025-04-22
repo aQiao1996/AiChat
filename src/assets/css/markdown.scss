@@ -15,6 +15,16 @@
   quotes: revert;
 }
 
+/* 代码样式 - 放在重置规则后 */
+.markdown-content code:not(pre code) {
+  color: #3dd68c;
+  background-color: rgba(61, 214, 140, 0.1);
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 90%;
+}
+
 /* markdown 表格样式 */
 .markdown-content {
   /* 表格容器样式 */
