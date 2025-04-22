@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
+import { ChatModule } from "./chat/chat.module";
 
 @Module({
   imports: [
@@ -19,9 +20,10 @@ import { AuthModule } from "./auth/auth.module";
       synchronize: true, // 是否自动同步数据库架构 生产环境中最好关闭,以防数据丢失
       autoLoadEntities: true, //如果为true,将自动加载实体 forFeature() 方法注册的每个实体都将自动添加到 entities 中
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ".env.development" }),
     UserModule,
     AuthModule,
+    ChatModule,
   ],
   controllers: [],
   providers: [],
