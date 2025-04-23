@@ -1,7 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
 import OpenAI from "openai";
 import { ConfigService } from "@nestjs/config";
 import { CreateChatDto } from "./dto/create-chat.dto";
+import { getTokenUserInfo } from "src/utils/index";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Chat } from "./entities/chat.entity";
+import { Repository } from "typeorm";
+import type { Request } from "express";
 
 // 扩展 Delta 类型定义
 interface Delta {
@@ -14,27 +20,34 @@ interface Delta {
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name); // 直接调用
-  constructor(private readonly configService: ConfigService) {}
+  private openai: OpenAI;
+  constructor(
+    @InjectRepository(Chat) private readonly chat: Repository<Chat>,
+    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService
+  ) {}
 
-  async createChat(createChatDto: CreateChatDto) {
-    this.logger.log("Creating chat with DTO:", createChatDto);
-    const openai = new OpenAI({
-      apiKey: this.configService.get("DATABASE_DASHSCOPE_API_KEY"),
-      baseURL: this.configService.get("DATABASE_DASHSCOPE_API_URL"),
+  async createChat() {
+    return new Promise(resolve => {
+      const openai = new OpenAI({
+        apiKey: this.configService.get("DATABASE_DASHSCOPE_API_KEY"),
+        baseURL: this.configService.get("DATABASE_DASHSCOPE_API_URL"),
+      });
+      this.openai = openai;
+      resolve(openai);
     });
-    const stream = await openai.chat.completions.create({
+  }
+  async createChatStream(createChatDto: CreateChatDto) {
+    let reasoningContent = "";
+    let answerContent = "";
+    let isAnswering = false;
+
+    const stream = await this.openai.chat.completions.create({
       model: createChatDto.model,
       messages: createChatDto.messages,
       stream: true,
     });
-    return stream;
-  }
-  async createChatStream(createChatDto: CreateChatDto) {
-    this.logger.log("Creating chat stream with DTO:", createChatDto);
-    const stream = await this.createChat(createChatDto);
-    let reasoningContent = "";
-    let answerContent = "";
-    let isAnswering = false;
+
     for await (const chunk of stream) {
       if (!chunk.choices?.length) {
         this.logger.log("Received chunk without choices:", chunk);
@@ -64,9 +77,12 @@ export class ChatService {
       reasoningContent, // 思考过程
     };
   }
-  async create(createChatDto: CreateChatDto) {
-    await this.createChat(createChatDto);
+  async create(createChatDto: CreateChatDto, request: Request) {
+    await this.createChat();
+    const token = request.get("authorization");
+    const userInfo = getTokenUserInfo(token);
+    const messages = await this.chat.findOne({ where: { id: userInfo.id } });
     // todo 储存信息
-    return;
+    return messages;
   }
 }

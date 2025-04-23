@@ -1,5 +1,13 @@
 // import * as jwt from "jsonwebtoken"; // 已弃用 改为 @nestjs/jwt
-
+import { JwtService } from "@nestjs/jwt";
+// 列表查询
+type QueryType = Partial<{
+  pageNum: number; // 页码
+  pageSize: number; // 每页数量
+  isAsc: "desc" | "asc"; // 排序方式 desc-降序 asc-升序
+  [key: string]: any;
+}>;
+const jwtService = new JwtService();
 // * jwt 相关
 // export const jwtHelper = (KEY = "nest_panghu", expiresIn = 60 * 60 * 12) => {
 //   // const KEY = "nest_panghu"; // 秘钥
@@ -34,12 +42,30 @@ export const formatFileSize = size => {
   return `${formattedSize} ${sizes[i]}`;
 };
 
-// * 处理分页
-export const handlePageing = ({ pageNum, pageSize }) => {
+// * 处理查询
+export const handleFindOptions = (params: { order?: any } & QueryType) => {
+  const { pageNum, pageSize, isAsc = "desc", order } = params;
   let options = {};
-  if (pageNum && pageNum > 0 && pageSize && pageSize > 0) {
+  if (pageNum > 0 && pageSize > 0) {
     options["skip"] = (pageNum - 1) * pageSize;
     options["take"] = +pageSize;
   }
+  // 排序
+  if (isAsc) {
+    options["order"] = { createDate: isAsc };
+  }
+  // 如果传进来一个对象 直接覆盖上面 order
+  if (order) {
+    options["order"] = order;
+  }
   return options;
+};
+
+// * 获取token中用户信息
+export const getTokenUserInfo = (authorization: string) => {
+  const [type, token] = authorization.split(" ") ?? [];
+  const result = type === "Bearer" ? authorization : undefined;
+  if (!result) return {};
+  const data = jwtService.decode(token);
+  return data;
 };

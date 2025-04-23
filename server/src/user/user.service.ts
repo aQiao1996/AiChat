@@ -16,14 +16,14 @@ export class UserService {
   // * 登录
   async login(createUserDto: CreateUserDto) {
     const user = await this.user.findOne({
-      select: ["username", "id", "password", "avatar"], // 查询的字段 不然默认全部
+      select: ["username", "id", "password"], // 查询的字段 不然默认全部
       where: { username: createUserDto.username },
     });
     if (!user) return "账号不存在";
     const isMatch = await bcrypt.compare(createUserDto.password, user.password);
     if (!isMatch) throw new HttpException("密码不正确", HttpStatus.BAD_REQUEST);
-    const token = await this.jwtService.signAsync(createUserDto);
     delete user.password;
+    const token = await this.jwtService.signAsync({ ...user });
     return { ...user, token };
   }
   // * 注册
