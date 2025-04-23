@@ -1,20 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import OpenAI from "openai";
 import { ConfigService } from "@nestjs/config";
-import { CreateChatDto } from "./dto/create-chat.dto";
-import { getTokenUserInfo } from "src/utils/index";
 import { InjectRepository } from "@nestjs/typeorm";
+import OpenAI from "openai";
+import { getTokenUserInfo } from "src/utils/index";
 import { Chat } from "./entities/chat.entity";
-import { Repository } from "typeorm";
+import type { Repository } from "typeorm";
 import type { Request } from "express";
+import type { CreateChatDto } from "./dto/create-chat.dto";
+import { Message } from "./entities/message.entity";
 
 // 扩展 Delta 类型定义
 interface Delta {
   content?: string;
   role?: string;
-  // 如果有自定义字段，在这里添加
-  reasoning_content?: string; // 可选，根据实际API响应决定
+  reasoning_content?: string;
 }
 
 @Injectable()
@@ -23,8 +22,8 @@ export class ChatService {
   private openai: OpenAI;
   constructor(
     @InjectRepository(Chat) private readonly chat: Repository<Chat>,
-    private readonly configService: ConfigService,
-    private readonly jwtService: JwtService
+    @InjectRepository(Message) private readonly message: Repository<Message>,
+    private readonly configService: ConfigService
   ) {}
 
   async createChat() {
@@ -38,51 +37,70 @@ export class ChatService {
     });
   }
   async createChatStream(createChatDto: CreateChatDto) {
-    let reasoningContent = "";
-    let answerContent = "";
-    let isAnswering = false;
+    const { Subject } = await import("rxjs");
+    const subject = new Subject<{ type: string; content: string }>();
 
-    const stream = await this.openai.chat.completions.create({
-      model: createChatDto.model,
-      messages: createChatDto.messages,
-      stream: true,
-    });
+    (async () => {
+      try {
+        const stream = await this.openai.chat.completions.create({
+          model: createChatDto.model,
+          messages: createChatDto.messages,
+          stream: true,
+        });
 
-    for await (const chunk of stream) {
-      if (!chunk.choices?.length) {
-        this.logger.log("Received chunk without choices:", chunk);
-        continue;
-      }
+        for await (const chunk of stream) {
+          if (!chunk.choices?.length) {
+            this.logger.log("Received chunk without choices:", chunk);
+            continue;
+          }
 
-      const delta = chunk.choices[0].delta as Delta; // 类型断言
+          const delta = chunk.choices[0].delta as Delta;
 
-      // 处理思考过程
-      if (delta.reasoning_content) {
-        process.stdout.write(delta.reasoning_content);
-        reasoningContent += delta.reasoning_content;
-      }
-      // 处理正式回复
-      if (delta.content) {
-        if (!isAnswering) {
-          this.logger.log("\n" + "=".repeat(20) + "完整回复" + "=".repeat(20) + "\n");
-          isAnswering = true;
+          if (delta.reasoning_content) {
+            subject.next({ type: "reasoning", content: delta.reasoning_content });
+          }
+
+          if (delta.content) {
+            subject.next({ type: "answer", content: delta.content });
+          }
         }
-        process.stdout.write(delta.content);
-        answerContent += delta.content;
-      }
-    }
 
-    return {
-      answerContent, // 正式回复
-      reasoningContent, // 思考过程
-    };
+        subject.complete();
+      } catch (error) {
+        this.logger.error("Error in chat stream:", error);
+        subject.error(error);
+      }
+    })();
+
+    return subject.asObservable();
   }
   async create(createChatDto: CreateChatDto, request: Request) {
     await this.createChat();
+
     const token = request.get("authorization");
     const userInfo = getTokenUserInfo(token);
-    const messages = await this.chat.findOne({ where: { id: userInfo.id } });
-    // todo 储存信息
-    return messages;
+
+    let chatRes = await this.chat.findOne({
+      where: { userId: userInfo.id },
+      relations: ["messages"],
+    });
+
+    const message = new Message();
+    message.content = [createChatDto];
+    message.role = "user";
+    message.timestamp = new Date();
+
+    if (chatRes) {
+      // 如果聊天记录已存在，添加新消息
+      chatRes.messages.push(message);
+      await this.chat.save(chatRes);
+    } else {
+      // 如果聊天记录不存在，创建新聊天记录
+      chatRes = new Chat();
+      chatRes.userId = userInfo.id;
+      chatRes.messages = [message];
+      await this.chat.save(chatRes);
+    }
+    return chatRes;
   }
 }
