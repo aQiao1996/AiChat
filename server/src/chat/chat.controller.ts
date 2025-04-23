@@ -1,8 +1,7 @@
-import { Controller, Post, Body, Sse, Get, Request } from "@nestjs/common";
+import { Controller, Post, Body, Sse, Get, Request, Query } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
-import { Public } from "src/auth/auth.decorator";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 @Controller("chat")
 @ApiTags("AI相关")
@@ -13,15 +12,25 @@ export class ChatController {
   @ApiOperation({ summary: "创建对话", description: "创建对话" })
   @ApiBody({ type: CreateChatDto })
   @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: "消息id" })
   create(@Body() createChatDto: CreateChatDto, @Request() request) {
     return this.chatService.create(createChatDto, request);
   }
 
   @Sse("/chatStream")
+  @ApiQuery({ name: "chatId", required: true, description: "消息id", type: Number })
+  @ApiQuery({
+    name: "model",
+    required: true,
+    description: "模型名称",
+    type: "enum",
+    enum: ["deepseek-v3", "deepseek-r1"],
+  })
   @ApiOperation({ summary: "对话(流式)", description: "对话(流式响应)" })
+  @ApiResponse({ status: 200, description: "流式响应" })
   @ApiBearerAuth()
-  async stream(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.createChatStream(createChatDto);
+  async stream(@Query("chatId") chatId, @Query("model") model) {
+    return this.chatService.createChatStream(chatId, model);
   }
 
   @Get("/messagesHistory")

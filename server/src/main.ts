@@ -30,12 +30,16 @@ async function bootstrap() {
   // * 配置 swagger
   const config = new DocumentBuilder()
     .addBearerAuth() // jsonwebtoken 配合 @ApiBearerAuth() 使用
-    .setTitle("胖虎") // 甚至文档名称
+    .setTitle("胖虎") // 设置文档名称
     .setDescription("胖虎nestjs接口描述文档") // 设置文档描述
     .setVersion("1.0") // 设置文档版本
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("/api-docs", app, document);
+  SwaggerModule.setup("/api-docs", app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // 启用持久化
+    },
+  });
   await app.listen(3000);
 }
 bootstrap();

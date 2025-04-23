@@ -13,7 +13,7 @@ export class Message {
   chat: Chat; // 外键关联到 Chat
 
   @Column({ type: "json", nullable: false, comment: "消息内容（JSON 格式）" })
-  content: CreateChatDto[];
+  content: CreateChatDto;
 
   @Column({ comment: "消息类型（user/assistant" })
   role: "user" | "assistant";
