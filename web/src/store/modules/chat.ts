@@ -5,10 +5,11 @@ interface IChatStore {
   messages: IMessage[];
   model: IModel;
 }
-interface IParams {
+interface IChatParams {
   model?: IModel;
   content: string;
 }
+
 const initialState: IChatStore = {
   messages: [
     {
@@ -19,20 +20,15 @@ const initialState: IChatStore = {
   model: "deepseek-v3",
 };
 
-export const createMessage = createAsyncThunk("chat/createMessage", async (params: IParams) => {
-  const apiKey = import.meta.env.VITE_APP_DASHSCOPE_API_KEY;
-  const url = import.meta.env.VITE_APP_DASHSCOPE_API_URL;
+export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams) => {
   const body = JSON.stringify({
     model: params.model || "deepseek-v3",
     messages: [{ role: "user", content: params.content }],
   });
   try {
-    const result = await fetch(url, {
+    const result = await fetch(import.meta.env.VITE_APP_BASE_URL + "/chat/createChat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: import.meta.env.VITE_APP_TOKEN },
       body,
     }).then(response => {
       if (!response.ok) {
@@ -42,10 +38,11 @@ export const createMessage = createAsyncThunk("chat/createMessage", async (param
     });
     return result;
   } catch (error) {
-    console.log("🚀 ~ createMessage ~ error:", error);
+    console.log("🚀 ~ createChat ~ error:", error);
     return null;
   }
 });
+
 
 const chatStore = createSlice({
   name: "chat",

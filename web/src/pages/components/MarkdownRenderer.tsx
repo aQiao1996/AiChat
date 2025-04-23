@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm"; //  Markdown 扩展，（自动链接文字�
 import rehypeColorChips from "rehype-color-chips"; // 颜色块
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"; // 语法高亮
 import { CopyToClipboard } from "react-copy-to-clipboard"; // 复制到剪贴板
+import Typewriter from "typewriter-effect"; // 打字机效果
 import { CopyOutlined } from "@ant-design/icons";
 // 主题列表 https://github.com/react-syntax-highlighter/react-syntax-highlighter/blob/master/AVAILABLE_STYLES_PRISM.MD
 import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism"; // 导入一个主题
@@ -61,6 +62,14 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
         }}
       >
         {markdown}
+        {/* <Typewriter
+          options={{
+            strings: [markdown], // 内容
+            autoStart: true, // 自动开始
+            delay: 50, // 每个建之间的延迟
+            cursor: "|",
+          }}
+        /> */}
       </ReactMarkdown>
     </div>
   );
