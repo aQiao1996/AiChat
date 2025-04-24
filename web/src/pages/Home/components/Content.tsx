@@ -15,7 +15,7 @@ const Content = () => {
               // user
               <div className={`flex items-center justify-end ${index !== 0 && "mt-8"}`}>
                 <div className="bg-gray-100 p-4 rounded-8 m-4">
-                  <MarkdownRenderer markdown={item.content}></MarkdownRenderer>
+                  <MarkdownRenderer markdown={item.content} role="user"></MarkdownRenderer>
                 </div>
                 <Avatar style={{ verticalAlign: "middle" }} size="large">
                   user
@@ -28,7 +28,7 @@ const Content = () => {
                   胖虎
                 </Avatar>
                 <div className="flex-1 p-4 m-4">
-                  <MarkdownRenderer markdown={item.content}></MarkdownRenderer>
+                  <MarkdownRenderer markdown={item.content} isLast={index === messages.length - 1}></MarkdownRenderer>
                 </div>
               </div>
             )}

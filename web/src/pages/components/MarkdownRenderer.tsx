@@ -10,6 +10,8 @@ import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/sty
 import type { Element, Text } from "hast";
 interface IMarkdownRendererProps {
   markdown: string;
+  role?: "user" | "assistant";
+  isLast?: boolean;
 }
 interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
   node?: any;
@@ -17,10 +19,10 @@ interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
 
 /**
  * 将 HAST (HTML Abstract Syntax Tree) 节点转换为 HTML 字符串
- * 
+ *
  * @param node - HAST 节点,可以是元素节点或文本节点
  * @returns 转换后的 HTML 字符串
- * 
+ *
  * @description
  * - 处理文本节点时直接返回其值
  * - 处理元素节点时:
@@ -82,18 +84,18 @@ const hastToString = (node: Element | Text): string => {
 
 /**
  * Markdown渲染组件
- * 
+ *
  * 该组件负责将Markdown文本渲染为React组件,具有以下特性:
  * - 支持GFM(GitHub Flavored Markdown)语法
  * - 段落文本具有打字机效果
  * - 代码块支持语法高亮
  * - 代码块右上角有复制按钮
- * 
+ *
  * @param {IMarkdownRendererProps} props - 组件属性
  * @param {string} props.markdown - 需要渲染的Markdown文本
  * @returns {JSX.Element} 渲染后的Markdown内容
  */
-const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
+const MarkdownRenderer = ({ markdown, role, isLast }: IMarkdownRendererProps) => {
   return (
     <div className="markdown-content prose max-w-none">
       <ReactMarkdown
@@ -101,8 +103,10 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
         rehypePlugins={[rehypeColorChips]}
         components={{
           // p 标签
-          p({ node }: ICodeProps) {
-            return (
+          p({ node, children }: ICodeProps) {
+            return role === "user" || !isLast ? (
+              <p>{children}</p>
+            ) : (
               <Typewriter
                 options={{ cursor: "", delay: 20 }}
                 onInit={typewriter => {
