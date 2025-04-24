@@ -4,7 +4,7 @@ import { useAppSelector } from "@/store";
 import MarkdownRenderer from "@/pages/components/MarkdownRenderer";
 
 const Content = () => {
-  const { messages } = useAppSelector(state => state.chat);
+  const { messages, currentAnswer } = useAppSelector(state => state.chat);
 
   return (
     <div className="flex flex-col">
@@ -28,7 +28,10 @@ const Content = () => {
                   胖虎
                 </Avatar>
                 <div className="flex-1 p-4 m-4">
-                  <MarkdownRenderer markdown={item.content} isLast={index === messages.length - 1}></MarkdownRenderer>
+                  <MarkdownRenderer
+                    markdown={index === messages.length - 1 && index !== 0 ? currentAnswer : item.content}
+                    isLast={index === messages.length - 1}
+                  ></MarkdownRenderer>
                 </div>
               </div>
             )}

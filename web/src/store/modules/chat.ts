@@ -4,10 +4,14 @@ import type { IMessage, IModel } from "@/types/chat";
 interface IChatStore {
   messages: IMessage[];
   model: IModel;
+  currentAnswer: string;
 }
 interface IChatParams {
   model?: IModel;
   content: string;
+}
+interface IUpdateMessages extends IMessage {
+  type: "plus" | "minus";
 }
 
 const initialState: IChatStore = {
@@ -18,6 +22,7 @@ const initialState: IChatStore = {
     },
   ],
   model: "deepseek-v3",
+  currentAnswer: "", // 当前回答
 };
 
 export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
@@ -44,7 +49,7 @@ export const createChat = createAsyncThunk("chat/createChat", async (params: ICh
   } catch (error) {
     return rejectWithValue({
       message: error instanceof Error ? error.message : "未知错误",
-      ...(error as any)?.response?.data, 
+      ...(error as any)?.response?.data,
     });
   }
 });
@@ -55,15 +60,28 @@ const chatStore = createSlice({
   initialState,
   // * 修改数据的同步方法
   reducers: {
-    updateMessages(state, { payload }: { payload: IMessage }) {
+    addMessages(state, { payload }: { payload: IMessage }) {
+      console.log("🚀 ~ addMessages ~ payload:", payload);
       state.messages.push(payload);
+    },
+    updateMessages(state, { payload }: { payload: IUpdateMessages }) {
+      if (payload.type === "plus") {
+        state.messages.push({ role: "assistant", content: "" });
+      } else {
+        const lastMsg = state.messages.at(-1);
+        if (!lastMsg) return;
+        lastMsg.content = payload.content;
+      }
     },
     updateModel(state, { payload }: { payload: IModel }) {
       state.model = payload;
     },
+    updateCurrentAnswer(state, { payload }: { payload: string }) {
+      state.currentAnswer += payload;
+    },
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { updateMessages, updateModel } = chatStore.actions;
+export const { addMessages, updateMessages, updateModel, updateCurrentAnswer } = chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;

@@ -43,12 +43,12 @@ export class ChatService {
   }
   /**
    * 创建聊天流式响应
-   * 
+   *
    * @param chatId - 聊天ID
    * @param model - 使用的模型类型,"deepseek-v3" 或 "deepseek-r1"
    * @returns Observable 流,包含 reasoning(思考过程)和 answer(回答内容)
    * @throws Error 当找不到对应的聊天记录时
-   * 
+   *
    * @description
    * 该方法创建一个流式的聊天响应:
    * - 查询聊天记录和最新消息
@@ -58,7 +58,11 @@ export class ChatService {
    * - 错误处理和资源清理
    */
   async createChatStream(chatId: number, model: "deepseek-v3" | "deepseek-r1") {
-    const subject = new Subject<{ type: string; content: string }>();
+    const subject = new Subject<{
+      type: "reasoning" | "answer" | "complete";
+      content?: string;
+      role: "user" | "assistant";
+    }>();
 
     try {
       const [chat, latestMessage] = await Promise.all([
@@ -103,19 +107,24 @@ export class ChatService {
 
             const delta = chunk.choices[0].delta as Delta;
 
-            // 思考
+            // 思考过程
             if (delta.reasoning_content) {
               subject.next({
                 type: "reasoning",
                 content: delta.reasoning_content,
+                role: "assistant",
               });
             }
             // 回答
             if (delta.content) {
-              subject.next({
-                type: "answer",
-                content: delta.content,
-              });
+              subject.next({ type: "answer", content: delta.content, role: "assistant" });
+            }
+
+            // 检查是否结束（根据OpenAI流式响应结束标志）
+            if (chunk.choices[0]?.finish_reason) {
+              subject.next({ type: "complete", role: "assistant" });
+              subject.complete();
+              break; // 退出循环
             }
           }
 
