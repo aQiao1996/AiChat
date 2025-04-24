@@ -20,29 +20,34 @@ const initialState: IChatStore = {
   model: "deepseek-v3",
 };
 
-export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams) => {
+export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
   const body = JSON.stringify({
     model: params.model || "deepseek-v3",
     messages: [{ role: "user", content: params.content }],
   });
   try {
-    const result = await fetch(import.meta.env.VITE_APP_BASE_URL + "/chat/createChat", {
+    const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/chat/createChat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: import.meta.env.VITE_APP_TOKEN },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: import.meta.env.VITE_APP_TOKEN,
+      },
       body,
-    }).then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP 错误! 状态: ${response.status}`);
-      }
-      return response.json();
     });
-    return result;
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    console.log("🚀 ~ createChat ~ error:", error);
-    return null;
+    return rejectWithValue({
+      message: error instanceof Error ? error.message : "未知错误",
+      ...(error as any)?.response?.data, 
+    });
   }
 });
-
 
 const chatStore = createSlice({
   name: "chat",
@@ -55,7 +60,6 @@ const chatStore = createSlice({
     },
     updateModel(state, { payload }: { payload: IModel }) {
       state.model = payload;
-      console.log("🚀 ~ updateModel ~ state.model:", state.model);
     },
   },
 });

@@ -1,3 +1,4 @@
+import { message } from "antd";
 import Content from "./components/Content";
 import MyInput from "./components/MyInput";
 import { useAppDispatch } from "@/store";
@@ -10,12 +11,17 @@ interface IStreamParams {
 }
 const Home = () => {
   const dispatch = useAppDispatch();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const sendMessage = async (message: string) => {
-    dispatch(updateMessages({ role: "user", content: message }));
-    const { payload } = await dispatch(createChat({ content: message }));
-    const chatId = payload.data;
-    createChatStream({ chatId });
+    try {
+      const result = await dispatch(createChat({ content: message })).unwrap();
+      dispatch(updateMessages({ role: "user", content: message }));
+      const chatId = result.data;
+      createChatStream({ chatId });
+    } catch (error: any) {
+      messageApi.error(error.message || "未知错误");
+    }
     // dispatch(updateMessages(result));
   };
 
@@ -27,19 +33,24 @@ const Home = () => {
       { headers: { Authorization: import.meta.env.VITE_APP_TOKEN } }
     );
     eventSource.onmessage = function (this, event) {
-      const result = JSON.parse(event.data || "{}").content;
+      const result = JSON.parse(event.data || "{}");
+      if (result.type === "answer") {
+        eventSource.close();
+      }
       console.log("🚀 ~ createChatStream ~ result:", result);
     };
   };
 
   return (
-    <div className="h-full flex flex-col p-24">
-      <div className="flex-1">
-       
-        <Content />
+    <>
+      {contextHolder}
+      <div className="h-full flex flex-col p-24">
+        <div className="flex-1">
+          <Content />
+        </div>
+        <MyInput sendMessage={sendMessage} />
       </div>
-      <MyInput sendMessage={sendMessage} />
-    </div>
+    </>
   );
 };
 
