@@ -108,12 +108,15 @@ const MarkdownRenderer = ({ markdown, role, isLast }: IMarkdownRendererProps) =>
               <p>{children}</p>
             ) : (
               <Typewriter
-                options={{ cursor: "", delay: 20 }}
+                options={{ cursor: "|", delay: 20 }}
                 onInit={typewriter => {
                   const content = hastToString(node);
                   typewriter
                     .typeString(content)
-                    .callFunction(() => {})
+                    .callFunction((value) => {
+                      // 隐藏光标
+                      value.elements.cursor.style.display = "none";
+                    })
                     .start();
                 }}
               />
