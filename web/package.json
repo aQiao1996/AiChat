@@ -15,6 +15,7 @@
     "@reduxjs/toolkit": "^2.7.0",
     "@tailwindcss/vite": "^4.1.4",
     "@types/event-source-polyfill": "^1.0.5",
+    "@types/hast": "^3.0.4",
     "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/react-syntax-highlighter": "^15.5.13",
     "antd": "^5.24.7",

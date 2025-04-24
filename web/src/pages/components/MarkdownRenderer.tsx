@@ -1,54 +1,113 @@
 import React from "react";
-import ReactMarkdown from "react-markdown"; // markdown 语法解析
-import remarkGfm from "remark-gfm"; //  Markdown 扩展，（自动链接文字、脚注、删除线、表格、任务列表）
-import rehypeColorChips from "rehype-color-chips"; // 颜色块
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"; // 语法高亮
-import { CopyToClipboard } from "react-copy-to-clipboard"; // 复制到剪贴板
-import Typewriter from "typewriter-effect"; // 打字机效果
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeColorChips from "rehype-color-chips";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import Typewriter from "typewriter-effect";
 import { CopyOutlined } from "@ant-design/icons";
-// 主题列表 https://github.com/react-syntax-highlighter/react-syntax-highlighter/blob/master/AVAILABLE_STYLES_PRISM.MD
-import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism"; // 导入一个主题
-
+import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import type { Element, Text } from "hast";
 interface IMarkdownRendererProps {
   markdown: string;
 }
-
 interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
-  inline?: boolean;
   node?: any;
 }
 
+// 递归转换函数
+const hastToString = (node: Element | Text): string => {
+  // 处理文本节点
+  if (node.type === "text") {
+    return node.value;
+  }
+
+  // 处理元素节点
+  if (node.type === "element") {
+    // 转换属性
+    const attrs = Object.entries(node.properties || {})
+      .map(([key, value]) => {
+        if (value === true) return key; // 处理布尔属性如 disabled
+        if (Array.isArray(value)) return `${key}="${value.join(" ")}"`; // 处理 class 数组
+        return `${key}="${value}"`;
+      })
+      .join(" ");
+
+    // 处理子节点
+    const children = (node.children || []).map(child => hastToString(child as Element | Text)).join("");
+
+    // 特殊处理 p 标签
+    if (node.tagName === "p") {
+      return children; // 直接返回子内容，不包裹 p 标签，否则打字机光标偏移
+    }
+
+    // 处理自闭合标签
+    const voidElements = new Set([
+      "area",
+      "base",
+      "br",
+      "col",
+      "embed",
+      "hr",
+      "img",
+      "input",
+      "link",
+      "meta",
+      "param",
+      "source",
+      "track",
+      "wbr",
+    ]);
+
+    return voidElements.has(node.tagName)
+      ? `<${node.tagName}${attrs ? " " + attrs : ""}>`
+      : `<${node.tagName}${attrs ? " " + attrs : ""}>${children}</${node.tagName}>`;
+  }
+
+  return "";
+};
+
 const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
   return (
-    <div className="markdown-content">
+    <div className="markdown-content prose max-w-none">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeColorChips]}
         components={{
-          // node：当前节点 inline：是否是行内代码块
-          code({ node, inline, className, children, ...props }: ICodeProps) {
+          p({ node }: ICodeProps) {
+            return (
+              <Typewriter
+                options={{ cursor: "|" }}
+                onInit={typewriter => {
+                  const content = hastToString(node);
+                  typewriter.changeDelay(30).typeString(content).start();
+                }}
+              />
+            );
+          },
+          code({ node, className, children, ...props }: ICodeProps) {
             const match = /language-(\w+)/.exec(className || "");
-            return !inline && match ? (
-              <div className="bg-gray-100 p-8 rounded-4">
-                {/*  */}
+            return match ? (
+              <div className="code-block relative group">
                 <CopyToClipboard text={String(children).replace(/\n$/, "")}>
-                  <div className="flex items-center justify-between py-4">
-                    <div className="lang">{match[1]}</div>
-                    <div className="cursor-pointer flex items-center">
-                      <CopyOutlined />
-                      <span className="ml-2">复制</span>
-                    </div>
+                  <div className="absolute right-4 top-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <CopyOutlined className="w-4 h-4" />
+                    <span className="text-sm">复制</span>
                   </div>
                 </CopyToClipboard>
-                {/*  */}
+
                 <SyntaxHighlighter
                   {...props}
-                  language={match[1]} // 高亮代码的语言
+                  language={match[1]}
                   style={themeStyle}
-                  PreTag="div" // 代替默认预标记的元素或自定义反应组件，即组件的最外层标记（
-                  wrapLongLines={true} // 是否 <code> 使用 white-space: pre-wrap 或 来设置块的样式white-space: pre
-                  wrapLines={false} // 用于确保每行代码在父元素中,false 时无法对行级别操作
-                  showLineNumbers={true} // 代码行号
+                  PreTag="div"
+                  wrapLongLines={true}
+                  showLineNumbers={true}
+                  customStyle={{
+                    borderRadius: "8px",
+                    marginTop: "1rem",
+                    position: "relative",
+                  }}
                 >
                   {String(children).replace(/\n$/, "")}
                 </SyntaxHighlighter>
@@ -62,14 +121,6 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
         }}
       >
         {markdown}
-        {/* <Typewriter
-          options={{
-            strings: [markdown], // 内容
-            autoStart: true, // 自动开始
-            delay: 50, // 每个建之间的延迟
-            cursor: "|",
-          }}
-        /> */}
       </ReactMarkdown>
     </div>
   );
