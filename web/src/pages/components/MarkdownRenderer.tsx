@@ -77,10 +77,13 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
           p({ node }: ICodeProps) {
             return (
               <Typewriter
-                options={{ cursor: "|" }}
+                options={{ cursor: "", delay: 20 }}
                 onInit={typewriter => {
                   const content = hastToString(node);
-                  typewriter.changeDelay(30).typeString(content).start();
+                  typewriter
+                    .typeString(content)
+                    .callFunction(() => {})
+                    .start();
                 }}
               />
             );
