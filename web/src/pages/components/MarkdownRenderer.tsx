@@ -15,7 +15,20 @@ interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
   node?: any;
 }
 
-// 递归转换函数
+/**
+ * 将 HAST (HTML Abstract Syntax Tree) 节点转换为 HTML 字符串
+ * 
+ * @param node - HAST 节点,可以是元素节点或文本节点
+ * @returns 转换后的 HTML 字符串
+ * 
+ * @description
+ * - 处理文本节点时直接返回其值
+ * - 处理元素节点时:
+ *   - 转换节点属性为 HTML 属性字符串
+ *   - 递归处理子节点
+ *   - 特殊处理 p 标签,仅返回其内容
+ *   - 处理自闭合标签
+ */
 const hastToString = (node: Element | Text): string => {
   // 处理文本节点
   if (node.type === "text") {
@@ -67,6 +80,19 @@ const hastToString = (node: Element | Text): string => {
   return "";
 };
 
+/**
+ * Markdown渲染组件
+ * 
+ * 该组件负责将Markdown文本渲染为React组件,具有以下特性:
+ * - 支持GFM(GitHub Flavored Markdown)语法
+ * - 段落文本具有打字机效果
+ * - 代码块支持语法高亮
+ * - 代码块右上角有复制按钮
+ * 
+ * @param {IMarkdownRendererProps} props - 组件属性
+ * @param {string} props.markdown - 需要渲染的Markdown文本
+ * @returns {JSX.Element} 渲染后的Markdown内容
+ */
 const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
   return (
     <div className="markdown-content prose max-w-none">
@@ -74,6 +100,7 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeColorChips]}
         components={{
+          // p 标签
           p({ node }: ICodeProps) {
             return (
               <Typewriter
@@ -88,6 +115,7 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
               />
             );
           },
+          // code 标签
           code({ node, className, children, ...props }: ICodeProps) {
             const match = /language-(\w+)/.exec(className || "");
             return match ? (
