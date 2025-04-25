@@ -40,7 +40,7 @@ const Content = () => {
             胖虎
           </Avatar>
           <div className="flex-1 p-4 m-4">
-            <MarkdownTypewriterRenderer isLast={true} />
+            <MarkdownTypewriterRenderer />
           </div>
         </div>
       )}
