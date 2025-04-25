@@ -14,9 +14,7 @@ const Content = () => {
             {item.role === "user" ? (
               // user
               <div className={`flex items-center justify-end ${index !== 0 && "mt-8"}`}>
-                <div className="bg-gray-100 p-4 rounded-8 m-4">
-                  <MarkdownRenderer markdown={item.content} role="user"></MarkdownRenderer>
-                </div>
+                <div className="bg-gray-100 p-4 rounded-8 m-4">{item.content}</div>
                 <Avatar style={{ verticalAlign: "middle" }} size="large" className="min-w-40">
                   user
                 </Avatar>

@@ -46,6 +46,7 @@ const Home = () => {
       if (type === "answer") {
         answerResult += content;
         if (isFirst) {
+          console.log("🚀 ~ createChatStream ~ 流式数据开始----->");
           dispatch(updateMessages({ type: "plus", content: "", role }));
           isFirst = false;
         }
@@ -54,6 +55,7 @@ const Home = () => {
       // 回答完成
       if (type === "complete") {
         eventSource.close();
+        console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
         dispatch(updateMessages({ type: "minus", content: answerResult, role }));
         // dispatch(addMessages({ content: answerResult, role }));
       }
