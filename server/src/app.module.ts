@@ -15,6 +15,7 @@ import { ChatModule } from "./chat/chat.module";
       password: "0jdt001ar", // 密码
       database: "deepseek", // 要连接的数据库名称
       timezone: "Z", // 纠正时区偏差
+      dateStrings: true, // 强制制日期类型作为字符串返回，而不是膨胀为JavaScript date对象
       // entities: [__dirname + "/**/*.entity{.ts,.js}"], // 实体类数组
       // retryDelay: 500, //重试连接数据库间隔
       // retryAttempts: 10, //重试连接数据库的次数

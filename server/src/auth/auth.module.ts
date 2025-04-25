@@ -8,7 +8,7 @@ import { AuthGuard } from "./auth.guard";
   imports: [
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: "12h" },
+      signOptions: { expiresIn: "12d" },
       global: true, // 如果只想在 AuthModule 中使用 JWT，则不要设置此选项
     }),
   ],

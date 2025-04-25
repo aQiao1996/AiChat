@@ -28,7 +28,6 @@ const MyInput = ({ sendMessage }: IProps) => {
     const target = event.target as HTMLInputElement;
     const startIdx = target.selectionStart || lastIdx;
     const endIdx = target.selectionEnd || lastIdx;
-    console.log(startIdx, endIdx, value.slice(0, startIdx) + "\n" + value.slice(endIdx));
     setValue(val => val.slice(0, startIdx) + "\n" + val.slice(endIdx));
     // 设置光标位置
     setTimeout(() => {
