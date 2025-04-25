@@ -76,7 +76,7 @@ const chatStore = createSlice({
       state.model = payload;
     },
     updateCurrentAnswer(state, { payload }: { payload: string }) {
-      state.currentAnswer += payload;
+      state.currentAnswer = payload;
     },
   },
 });

@@ -2,9 +2,10 @@ import { Avatar } from "antd";
 import AvatarImage from "@/assets/images/avatar.png";
 import { useAppSelector } from "@/store";
 import MarkdownRenderer from "@/pages/components/MarkdownRenderer";
+import MarkdownTypewriterRenderer from "@/pages/components/MarkdownTypewriterRenderer";
 
 const Content = () => {
-  const { messages } = useAppSelector(state => state.chat);
+  const { messages, currentAnswer } = useAppSelector(state => state.chat);
 
   return (
     <div className="flex flex-col">
@@ -26,16 +27,23 @@ const Content = () => {
                   胖虎
                 </Avatar>
                 <div className="flex-1 p-4 m-4">
-                  <MarkdownRenderer
-                    markdown={item.content}
-                    isLast={index === messages.length - 1 && index !== 0}
-                  ></MarkdownRenderer>
+                  <MarkdownRenderer markdown={item.content} />
                 </div>
               </div>
             )}
           </div>
         );
       })}
+      {currentAnswer && (
+        <div className="flex items-center justify-start mt-8">
+          <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
+            胖虎
+          </Avatar>
+          <div className="flex-1 p-4 m-4">
+            <MarkdownTypewriterRenderer isLast={true} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
