@@ -17,7 +17,7 @@ const Content = () => {
                 <div className="bg-gray-100 p-4 rounded-8 m-4">
                   <MarkdownRenderer markdown={item.content} role="user"></MarkdownRenderer>
                 </div>
-                <Avatar style={{ verticalAlign: "middle" }} size="large">
+                <Avatar style={{ verticalAlign: "middle" }} size="large" className="min-w-40">
                   user
                 </Avatar>
               </div>
