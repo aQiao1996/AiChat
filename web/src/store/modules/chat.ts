@@ -61,7 +61,6 @@ const chatStore = createSlice({
   // * 修改数据的同步方法
   reducers: {
     addMessages(state, { payload }: { payload: IMessage }) {
-      console.log("🚀 ~ addMessages ~ payload:", payload);
       state.messages.push(payload);
     },
     updateMessages(state, { payload }: { payload: IUpdateMessages }) {

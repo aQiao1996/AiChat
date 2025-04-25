@@ -38,7 +38,7 @@ const Home = () => {
 
     eventSource.onmessage = function (this, event) {
       const { type, content, role } = JSON.parse(event.data || "{}");
-      console.log("🚀 ~ createChatStream ~ result:", type, content, role);
+      // console.log("🚀 ~ createChatStream ~ result:", type, content, role);
       // 思考
       if (type === "reasoning") {
       }
