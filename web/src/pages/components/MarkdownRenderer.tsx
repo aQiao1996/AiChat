@@ -7,11 +7,12 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import Typewriter, { TypewriterClass } from "typewriter-effect";
 import { CopyOutlined } from "@ant-design/icons";
 import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import type { Element, Text } from "hast";
 import { useAppSelector } from "@/store";
+import type { Element, Text } from "hast";
+
 interface IMarkdownRendererProps {
   markdown: string;
-  role?: "user" | "assistant";
+  // role?: "user" | "assistant";
   isLast?: boolean;
 }
 interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
@@ -96,7 +97,7 @@ const hastToString = (node: Element | Text): string => {
  * @param {string} props.markdown - 需要渲染的Markdown文本
  * @returns {JSX.Element} 渲染后的Markdown内容
  */
-const MarkdownRenderer = ({ markdown, role, isLast }: IMarkdownRendererProps) => {
+const MarkdownRenderer = ({ markdown, isLast }: IMarkdownRendererProps) => {
   const { currentAnswer } = useAppSelector(state => state.chat);
   const typewriterRef = useRef<TypewriterClass | null>(null);
   const prevContentRef = useRef<string>("");
@@ -140,9 +141,7 @@ const MarkdownRenderer = ({ markdown, role, isLast }: IMarkdownRendererProps) =>
           components={{
             // p 标签
             p({ node, children }: ICodeProps) {
-              return role === "user" || !isLast ? (
-                <p>{children}</p>
-              ) : (
+              return isLast ? (
                 // <span className="typewriter-text">{children}</span>
                 // <Typewriter
                 //   options={{ cursor: "|", delay: 20 }}
@@ -156,6 +155,8 @@ const MarkdownRenderer = ({ markdown, role, isLast }: IMarkdownRendererProps) =>
                 //   }}
                 // />
                 memoizedTypewriter
+              ) : (
+                <p>{children}</p>
               );
             },
             // code 标签
