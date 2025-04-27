@@ -1,13 +1,21 @@
-import { Avatar } from "antd";
+import { Avatar, Spin } from "antd";
 import AvatarImage from "@/assets/images/avatar.png";
 import { useAppSelector } from "@/store";
 import MarkdownRenderer from "@/pages/components/MarkdownRenderer";
+import { useEffect, useRef } from "react";
 
 const Content = () => {
-  const { messages, currentAnswer } = useAppSelector(state => state.chat);
+  const chatListRef = useRef<HTMLDivElement>(null);
+  const { messages, currentAnswer, isLoading } = useAppSelector(state => state.chat);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full overflow-y-auto" ref={chatListRef}>
       {messages.map((item, index) => {
         return (
           <div key={index}>
@@ -35,7 +43,7 @@ const Content = () => {
       })}
       {currentAnswer && (
         <div className="flex items-center justify-start mt-8">
-          <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
+          <Avatar style={{ verticalAlign: "middle" }} size="large" src={isLoading ? <Spin /> : AvatarImage}>
             胖虎
           </Avatar>
           <div className="flex-1 p-4 m-4">

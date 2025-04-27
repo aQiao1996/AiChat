@@ -5,13 +5,11 @@ interface IChatStore {
   messages: IMessage[];
   model: IModel;
   currentAnswer: string;
+  isLoading: boolean;
 }
 interface IChatParams {
   model?: IModel;
   content: string;
-}
-interface IUpdateMessages extends IMessage {
-  type: "plus" | "minus";
 }
 
 const initialState: IChatStore = {
@@ -23,6 +21,7 @@ const initialState: IChatStore = {
   ],
   model: "deepseek-v3",
   currentAnswer: "", // 当前回答
+  isLoading: false,
 };
 
 export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
@@ -63,24 +62,18 @@ const chatStore = createSlice({
     addMessages(state, { payload }: { payload: IMessage }) {
       state.messages.push(payload);
     },
-    updateMessages(state, { payload }: { payload: IUpdateMessages }) {
-      if (payload.type === "plus") {
-        state.messages.push({ role: "assistant", content: "" });
-      } else {
-        const lastMsg = state.messages.at(-1);
-        if (!lastMsg) return;
-        lastMsg.content = payload.content;
-      }
-    },
     updateModel(state, { payload }: { payload: IModel }) {
       state.model = payload;
     },
     updateCurrentAnswer(state, { payload }: { payload: string }) {
       state.currentAnswer = payload;
     },
+    setLoading(state, { payload }: { payload: boolean }) {
+      state.isLoading = payload;
+    },
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { addMessages, updateMessages, updateModel, updateCurrentAnswer } = chatStore.actions;
+export const { addMessages, updateModel, updateCurrentAnswer, setLoading } = chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;

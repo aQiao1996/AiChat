@@ -3,7 +3,7 @@ import Content from "./components/Content";
 import MyInput from "./components/MyInput";
 import { useAppDispatch } from "@/store";
 import { EventSourcePolyfill } from "event-source-polyfill";
-import { createChat, addMessages, updateMessages, updateCurrentAnswer } from "@/store/modules/chat";
+import { createChat, addMessages, updateCurrentAnswer, setLoading } from "@/store/modules/chat";
 import type { IModel } from "@/types/chat";
 
 interface IStreamParams {
@@ -36,6 +36,10 @@ const Home = () => {
     let answerResult = ""; // 结果
     let isFirst = true; // 是否首次接收消息
 
+    eventSource.onopen = function (this: EventSource) {
+      dispatch(setLoading(true));
+    };
+
     eventSource.onmessage = function (this, event) {
       const { type, content, role } = JSON.parse(event.data || "{}");
       // console.log("🚀 ~ createChatStream ~ result:", type, content, role);
@@ -55,9 +59,17 @@ const Home = () => {
       if (type === "complete") {
         eventSource.close();
         console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
+        dispatch(setLoading(false));
         dispatch(addMessages({ content: answerResult, role }));
         dispatch(updateCurrentAnswer(""));
       }
+    };
+
+    eventSource.onerror = function (this: EventSource, event) {
+      console.error("EventSource failed:", event);
+      eventSource.close();
+      dispatch(setLoading(false));
+      messageApi.error("网络异常，请稍后再试");
     };
   };
 
@@ -65,7 +77,7 @@ const Home = () => {
     <>
       {contextHolder}
       <div className="h-full flex flex-col p-24">
-        <div className="flex-1">
+        <div className="flex-1 overflow-hidden">
           <Content />
         </div>
         <MyInput sendMessage={sendMessage} />
