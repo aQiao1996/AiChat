@@ -2,7 +2,6 @@ import { Avatar } from "antd";
 import AvatarImage from "@/assets/images/avatar.png";
 import { useAppSelector } from "@/store";
 import MarkdownRenderer from "@/pages/components/MarkdownRenderer";
-import MarkdownTypewriterRenderer from "@/pages/components/MarkdownTypewriterRenderer";
 
 const Content = () => {
   const { messages, currentAnswer } = useAppSelector(state => state.chat);
@@ -40,7 +39,7 @@ const Content = () => {
             胖虎
           </Avatar>
           <div className="flex-1 p-4 m-4">
-            <MarkdownTypewriterRenderer />
+            <MarkdownRenderer markdown={currentAnswer} />
           </div>
         </div>
       )}
