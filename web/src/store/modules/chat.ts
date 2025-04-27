@@ -7,6 +7,7 @@ interface IChatStore {
   currentAnswer: string;
   currentReasoning: string;
   isLoading: boolean;
+  reasoningTime?: number | string;
 }
 interface IChatParams {
   model?: IModel;
@@ -24,6 +25,7 @@ const initialState: IChatStore = {
   currentAnswer: "", // 当前回答
   currentReasoning: "", // 当前思考
   isLoading: false,
+  reasoningTime: undefined, // 思考用时
 };
 
 export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
@@ -87,9 +89,12 @@ const chatStore = createSlice({
     setLoading(state, { payload }: { payload: boolean }) {
       state.isLoading = payload;
     },
+    setReasoningTime(state, { payload }: { payload: number | string }) {
+      state.reasoningTime = payload;
+    },
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { addMessages, updateModel, updateCurrentMessage, setLoading } = chatStore.actions;
+export const { addMessages, updateModel, updateCurrentMessage, setLoading, setReasoningTime } = chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;

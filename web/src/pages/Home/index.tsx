@@ -3,8 +3,8 @@ import Content from "./components/Content";
 import MyInput from "./components/MyInput";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { EventSourcePolyfill } from "event-source-polyfill";
-import { createChat, addMessages, updateCurrentMessage, setLoading } from "@/store/modules/chat";
-import type { IModel } from "@/types/chat";
+import { createChat, addMessages, updateCurrentMessage, setLoading, setReasoningTime } from "@/store/modules/chat";
+import type { IMessage, IModel } from "@/types/chat";
 
 interface IStreamParams {
   model?: IModel;
@@ -36,9 +36,12 @@ const Home = () => {
 
     let reasoningResult = ""; // 思考
     let answerResult = ""; // 回答
+    let reasoningStartTime = 0; // 思考开始时间（性能高精度计时）
+    let reasoningTimeMs = 0; // 思考总耗时（毫秒）
 
     eventSource.onopen = function (this: EventSource) {
       dispatch(setLoading(true));
+      dispatch(setReasoningTime(0));
       console.log("🚀 ~ createChatStream ~ 流式数据开始----->");
     };
 
@@ -47,6 +50,9 @@ const Home = () => {
       // console.log("🚀 ~ createChatStream ~ result:", type, content, role);
       // 思考
       if (type === "reasoning") {
+        if (!reasoningStartTime) {
+          reasoningStartTime = performance.now(); // 记录思考开始时间
+        }
         reasoningResult += content;
         dispatch(updateCurrentMessage({ content: reasoningResult, type }));
       }
@@ -54,14 +60,24 @@ const Home = () => {
       if (type === "answer") {
         answerResult += content;
         dispatch(updateCurrentMessage({ content: answerResult, type }));
+        if (reasoningStartTime && !reasoningTimeMs) {
+          reasoningTimeMs = performance.now() - reasoningStartTime; // 计算思考耗时
+          dispatch(setReasoningTime((reasoningTimeMs / 1000).toFixed(2)));
+        }
       }
       // 回答完成
       if (type === "complete") {
         eventSource.close();
         console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
         dispatch(setLoading(false));
-        dispatch(addMessages({ content: answerResult, role }));
         dispatch(updateCurrentMessage(null));
+        // 如果有思考答案
+        const messageItem: IMessage = { content: answerResult, role };
+        if (reasoningResult) {
+          messageItem.reasoning = reasoningResult;
+          messageItem.reasoningTime = (reasoningTimeMs / 1000).toFixed(2);
+        }
+        dispatch(addMessages(messageItem));
       }
     };
 
