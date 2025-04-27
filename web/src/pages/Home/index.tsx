@@ -1,9 +1,9 @@
 import { message } from "antd";
 import Content from "./components/Content";
 import MyInput from "./components/MyInput";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 import { EventSourcePolyfill } from "event-source-polyfill";
-import { createChat, addMessages, updateCurrentAnswer, setLoading } from "@/store/modules/chat";
+import { createChat, addMessages, updateCurrentMessage, setLoading } from "@/store/modules/chat";
 import type { IModel } from "@/types/chat";
 
 interface IStreamParams {
@@ -13,13 +13,14 @@ interface IStreamParams {
 const Home = () => {
   const dispatch = useAppDispatch();
   const [messageApi, contextHolder] = message.useMessage();
+  const { model } = useAppSelector(state => state.chat);
 
   const sendMessage = async (message: string) => {
     try {
-      const result = await dispatch(createChat({ content: message })).unwrap();
+      const result = await dispatch(createChat({ content: message, model })).unwrap();
       dispatch(addMessages({ role: "user", content: message }));
       const chatId = result.data;
-      createChatStream({ chatId });
+      createChatStream({ chatId, model });
     } catch (error: any) {
       messageApi.error(error.message || "未知错误");
     }
@@ -33,11 +34,12 @@ const Home = () => {
       { headers: { Authorization: import.meta.env.VITE_APP_TOKEN } }
     );
 
-    let answerResult = ""; // 结果
-    let isFirst = true; // 是否首次接收消息
+    let reasoningResult = ""; // 思考
+    let answerResult = ""; // 回答
 
     eventSource.onopen = function (this: EventSource) {
       dispatch(setLoading(true));
+      console.log("🚀 ~ createChatStream ~ 流式数据开始----->");
     };
 
     eventSource.onmessage = function (this, event) {
@@ -45,15 +47,13 @@ const Home = () => {
       // console.log("🚀 ~ createChatStream ~ result:", type, content, role);
       // 思考
       if (type === "reasoning") {
+        reasoningResult += content;
+        dispatch(updateCurrentMessage({ content: reasoningResult, type }));
       }
       // 回答
       if (type === "answer") {
         answerResult += content;
-        if (isFirst) {
-          console.log("🚀 ~ createChatStream ~ 流式数据开始----->");
-          isFirst = false;
-        }
-        dispatch(updateCurrentAnswer(answerResult));
+        dispatch(updateCurrentMessage({ content: answerResult, type }));
       }
       // 回答完成
       if (type === "complete") {
@@ -61,7 +61,7 @@ const Home = () => {
         console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
         dispatch(setLoading(false));
         dispatch(addMessages({ content: answerResult, role }));
-        dispatch(updateCurrentAnswer(""));
+        dispatch(updateCurrentMessage(null));
       }
     };
 

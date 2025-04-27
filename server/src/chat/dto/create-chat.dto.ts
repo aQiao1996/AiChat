@@ -22,9 +22,6 @@ export class CreateChatDto {
     enum: ["deepseek-v3", "deepseek-r1"],
     description: "模型名称"
   })
-  @IsNotEmpty({ message: "模型不能为空" })
-  @IsString()
-  model: "deepseek-v3" | "deepseek-r1";
 
   @ApiProperty({ 
     type: [ChatMessageDto],

@@ -5,6 +5,7 @@ interface IChatStore {
   messages: IMessage[];
   model: IModel;
   currentAnswer: string;
+  currentReasoning: string;
   isLoading: boolean;
 }
 interface IChatParams {
@@ -21,6 +22,7 @@ const initialState: IChatStore = {
   ],
   model: "deepseek-v3",
   currentAnswer: "", // 当前回答
+  currentReasoning: "", // 当前思考
   isLoading: false,
 };
 
@@ -65,8 +67,22 @@ const chatStore = createSlice({
     updateModel(state, { payload }: { payload: IModel }) {
       state.model = payload;
     },
-    updateCurrentAnswer(state, { payload }: { payload: string }) {
-      state.currentAnswer = payload;
+    updateCurrentMessage(state, { payload }: { payload: { content: string; type: "reasoning" | "answer" } | null }) {
+      if (!payload) {
+        state.currentAnswer = "";
+        state.currentReasoning = "";
+        return;
+      }
+      switch (payload.type) {
+        case "reasoning":
+          state.currentReasoning = payload.content;
+          break;
+        case "answer":
+          state.currentAnswer = payload.content;
+          break;
+        default:
+          break;
+      }
     },
     setLoading(state, { payload }: { payload: boolean }) {
       state.isLoading = payload;
@@ -74,6 +90,6 @@ const chatStore = createSlice({
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { addMessages, updateModel, updateCurrentAnswer, setLoading } = chatStore.actions;
+export const { addMessages, updateModel, updateCurrentMessage, setLoading } = chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;
