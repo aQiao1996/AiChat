@@ -6,7 +6,7 @@ import { getTokenUserInfo } from "src/utils/index";
 import { Chat } from "./entities/chat.entity";
 import { Message } from "./entities/message.entity";
 import { Subject, Observable } from "rxjs";
-import { encoding_for_model } from "tiktoken";
+import { get_encoding } from "tiktoken";
 import type { Repository } from "typeorm";
 import type { Request } from "express";
 import type { CreateChatDto } from "./dto/create-chat.dto";
@@ -79,16 +79,46 @@ export class ChatService {
         throw new Error(`Chat with ID ${chatId} not found`);
       }
 
-      const messages = latestMessage
+      const rawMessages = latestMessage
         ? latestMessage
             .reverse()
             .map(item => item.content.messages)
             .flat()
         : [];
-      console.log("🚀 ~ createChatStream ~ messages:", messages);
+
+      // 计算 tokens
+      const tokenizer = get_encoding("cl100k_base"); // 通用编码
+      // https://bailian.console.aliyun.com/?tab=api#/api/?type=model&url=https%3A%2F%2Fhelp.aliyun.com%2Fdocument_detail%2F2868565.html
+      const MAX_TOKENS_MAP = {
+        "deepseek-v3": 4096, // 合理范围：4096-8192（保守取4096）
+        "deepseek-r1": 8192, // 合理范围：8192-16384（保守取8192）
+      };
+      const maxTokens = MAX_TOKENS_MAP[model];
+
+      // 计算当前 Token 数量
+      let currentTokens = 0;
+      const validMessages = rawMessages.filter(message => {
+        if (!message.role || !message.content) return false;
+        const tokens = tokenizer.encode(message.content).length;
+        currentTokens += tokens;
+        return true;
+      });
+
+      // 截断旧消息
+      while (currentTokens > maxTokens && validMessages.length > 0) {
+        const removed = validMessages.shift();
+        currentTokens -= tokenizer.encode(removed.content).length;
+      }
+
+      // 确保至少保留一个空消息
+      if (validMessages.length === 0) {
+        validMessages.push({ role: "user", content: "" });
+      }
+
       if (!this.openai) {
         await this.createChat();
       }
+      const messages = validMessages;
 
       const stream = await this.openai.chat.completions.create({
         model,
