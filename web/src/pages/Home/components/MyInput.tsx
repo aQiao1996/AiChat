@@ -1,6 +1,6 @@
 import { Button, Input } from "antd";
 import { useState } from "react";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 import { updateModel } from "@/store/modules/chat";
 
 const { TextArea } = Input;
@@ -13,6 +13,7 @@ const MyInput = ({ sendMessage }: IProps) => {
   const [value, setValue] = useState(""); // 输入框的值
   const [deepThinking, setDeepThinking] = useState(false);
   const dispatch = useAppDispatch();
+  const { isLoading } = useAppSelector(state => state.chat);
 
   // 是否深度思考
   const handleConfirm = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -48,6 +49,7 @@ const MyInput = ({ sendMessage }: IProps) => {
         placeholder="有问题，尽管问，shift+enter换行"
         className="!border-none !shadow-none"
         value={value}
+        disabled={isLoading}
         onChange={e => setValue(e.target.value)}
         onPressEnter={handleConfirm}
       />

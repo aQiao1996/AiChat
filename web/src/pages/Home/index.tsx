@@ -16,12 +16,14 @@ const Home = () => {
   const { model } = useAppSelector(state => state.chat);
 
   const sendMessage = async (message: string) => {
+    dispatch(setLoading(true));
     try {
       const result = await dispatch(createChat({ content: message })).unwrap();
       dispatch(addMessages({ role: "user", content: message }));
       const chatId = result.data;
       createChatStream({ chatId, model });
     } catch (error: any) {
+      dispatch(setLoading(false));
       messageApi.error(error.message || "未知错误");
     }
   };
@@ -40,7 +42,6 @@ const Home = () => {
     let reasoningTimeMs = 0; // 思考总耗时（毫秒）
 
     eventSource.onopen = function (this: EventSource) {
-      dispatch(setLoading(true));
       dispatch(setReasoningTime(0));
       console.log("🚀 ~ createChatStream ~ 流式数据开始----->");
     };
