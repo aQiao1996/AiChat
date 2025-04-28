@@ -10,7 +10,6 @@ interface IChatStore {
   reasoningTime?: number | string;
 }
 interface IChatParams {
-  model?: IModel;
   content: string;
 }
 
@@ -30,7 +29,6 @@ const initialState: IChatStore = {
 
 export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
   const body = JSON.stringify({
-    model: params.model || "deepseek-v3",
     messages: [{ role: "user", content: params.content }],
   });
   try {

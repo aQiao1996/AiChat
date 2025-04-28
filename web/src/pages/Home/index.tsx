@@ -17,7 +17,7 @@ const Home = () => {
 
   const sendMessage = async (message: string) => {
     try {
-      const result = await dispatch(createChat({ content: message, model })).unwrap();
+      const result = await dispatch(createChat({ content: message })).unwrap();
       dispatch(addMessages({ role: "user", content: message }));
       const chatId = result.data;
       createChatStream({ chatId, model });

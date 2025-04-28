@@ -19,11 +19,6 @@ class ChatMessageDto {
 
 export class CreateChatDto {
   @ApiProperty({ 
-    enum: ["deepseek-v3", "deepseek-r1"],
-    description: "模型名称"
-  })
-
-  @ApiProperty({ 
     type: [ChatMessageDto],
     description: "消息列表"
   })

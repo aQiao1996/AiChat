@@ -6,6 +6,7 @@ import { getTokenUserInfo } from "src/utils/index";
 import { Chat } from "./entities/chat.entity";
 import { Message } from "./entities/message.entity";
 import { Subject, Observable } from "rxjs";
+import { encoding_for_model } from "tiktoken";
 import type { Repository } from "typeorm";
 import type { Request } from "express";
 import type { CreateChatDto } from "./dto/create-chat.dto";
@@ -67,9 +68,10 @@ export class ChatService {
     try {
       const [chat, latestMessage] = await Promise.all([
         this.chat.findOneBy({ id: chatId }),
-        this.message.findOne({
+        this.message.find({
           where: { chat: { id: chatId } },
           order: { timestamp: "DESC" },
+          take: 3, // 多轮对话,获取最近的三条消息
         }),
       ]);
 
@@ -77,8 +79,13 @@ export class ChatService {
         throw new Error(`Chat with ID ${chatId} not found`);
       }
 
-      const messages = latestMessage ? latestMessage.content.messages.flat() : [];
-
+      const messages = latestMessage
+        ? latestMessage
+            .reverse()
+            .map(item => item.content.messages)
+            .flat()
+        : [];
+      console.log("🚀 ~ createChatStream ~ messages:", messages);
       if (!this.openai) {
         await this.createChat();
       }
@@ -94,6 +101,8 @@ export class ChatService {
       const timeout = setTimeout(() => {
         abortController.abort("Stream timeout after 30 seconds");
       }, 30000);
+
+      let answerResult = ""; // 回答
 
       (async () => {
         try {
@@ -118,6 +127,7 @@ export class ChatService {
             // 回答
             if (delta.content) {
               subject.next({ type: "answer", content: delta.content, role: "assistant" });
+              answerResult += delta.content;
             }
 
             // 检查是否结束（根据OpenAI流式响应结束标志）
@@ -127,6 +137,13 @@ export class ChatService {
               break; // 退出循环
             }
           }
+          // 完成后添加 AI 回复的消息
+          const message = new Message();
+          message.content = { messages: [{ content: answerResult, role: "assistant" }] };
+          message.role = "assistant";
+          message.timestamp = new Date();
+          message.chat = chat; // 关联 chat 实体
+          await this.message.save(message);
 
           subject.complete();
         } catch (error) {
