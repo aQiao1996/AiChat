@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { message } from "antd";
 import Content from "./components/Content";
 import MyInput from "./components/MyInput";
@@ -10,10 +11,18 @@ interface IStreamParams {
   model?: IModel;
   chatId: number;
 }
+export interface IMyInputChildMethods {
+  setSendBtnState: React.Dispatch<React.SetStateAction<TState>>;
+}
+export type TState = "default" | "loading" | "answering";
+export type TEventSource = EventSourcePolyfill | undefined;
+
 const Home = () => {
+  const MyInputRef = useRef<IMyInputChildMethods>(null);
   const dispatch = useAppDispatch();
   const [messageApi, contextHolder] = message.useMessage();
   const { model } = useAppSelector(state => state.chat);
+  const [eventSource, setEventSource] = useState<TEventSource>();
 
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
@@ -35,6 +44,7 @@ const Home = () => {
       }`,
       { headers: { Authorization: import.meta.env.VITE_APP_TOKEN } }
     );
+    setEventSource(eventSource);
 
     let reasoningResult = ""; // 思考
     let answerResult = ""; // 回答
@@ -47,6 +57,7 @@ const Home = () => {
     };
 
     eventSource.onmessage = function (this, event) {
+      MyInputRef.current?.setSendBtnState("answering");
       const { type, content, role } = JSON.parse(event.data || "{}");
       // console.log("🚀 ~ createChatStream ~ result:", type, content, role);
       // 思考
@@ -72,6 +83,7 @@ const Home = () => {
         console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
+        MyInputRef.current?.setSendBtnState("default");
         // 如果有思考答案
         const messageItem: IMessage = { content: answerResult, role };
         if (reasoningResult) {
@@ -97,7 +109,7 @@ const Home = () => {
         <div className="flex-1 overflow-hidden">
           <Content />
         </div>
-        <MyInput sendMessage={sendMessage} />
+        <MyInput ref={MyInputRef} sendMessage={sendMessage} eventSource={eventSource} />
       </div>
     </>
   );
