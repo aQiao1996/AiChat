@@ -9,7 +9,8 @@ import { Subject, Observable } from "rxjs";
 import { get_encoding } from "tiktoken";
 import type { Repository } from "typeorm";
 import type { Request } from "express";
-import type { CreateChatDto } from "./dto/create-chat.dto";
+import type { CreateChatDto, ChatMessageDto } from "./dto/create-chat.dto";
+
 // 扩展 Delta 类型定义
 interface Delta {
   content?: string;
@@ -199,6 +200,36 @@ export class ChatService {
       return subject.asObservable();
     }
   }
+  async getDialogueTitle(messages: ChatMessageDto[]) {
+    if (!this.openai) {
+      await this.createChat();
+    }
+    // 动态注入提示词
+    const promptMessages: ChatMessageDto[] = [
+      {
+        role: "user",
+        content:
+          "你是一个专业的代码分析助手，擅长从代码和问题描述中提取精准的标题。" +
+          "请根据以下信息生成一个简洁、准确的标题，避免冗余描述。",
+      },
+      ...messages,
+      {
+        role: "user",
+        content:
+          "请根据上述内容生成一个标题，要求：\n" +
+          "- 简洁（不超过15个字）\n" +
+          "- 准确反映代码或问题的核心\n" +
+          "- 使用中文（如果适用）\n" +
+          "- 避免模糊词汇（如'问题'、'错误'），尽量具体（如'数组越界异常处理'）",
+      },
+    ];
+    const completion = await this.openai.chat.completions.create({
+      model: "deepseek-v3",
+      messages: promptMessages,
+    });
+    const title = completion.choices[0].message.content;
+    return title;
+  }
   /**
    * 创建新的聊天记录
    *
@@ -228,6 +259,7 @@ export class ChatService {
     message.content = createChatDto;
     message.role = "user";
     message.timestamp = new Date();
+    let title = "";
 
     if (chatRes) {
       // 如果聊天记录已存在，添加新消息
@@ -236,10 +268,11 @@ export class ChatService {
     } else {
       // 如果聊天记录不存在，创建新聊天记录
       chatRes = new Chat();
+      title = await this.getDialogueTitle(createChatDto.messages);
       chatRes.userId = userInfo.id;
       chatRes.messages = [message];
       await this.chat.save(chatRes);
     }
-    return chatRes.id;
+    return { id: chatRes.id, title };
   }
 }

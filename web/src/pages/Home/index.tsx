@@ -27,9 +27,10 @@ const Home = () => {
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
     try {
-      const result = await dispatch(createChat({ content: message })).unwrap();
+      const { data } = await dispatch(createChat({ content: message })).unwrap();
       dispatch(addMessages({ role: "user", content: message }));
-      const chatId = result.data;
+      const chatId = data.id;
+      if (!chatId) return;
       createChatStream({ chatId, model });
     } catch (error: any) {
       dispatch(setLoading(false));

@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsNotEmpty, IsString, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 
-class ChatMessageDto {
+export class ChatMessageDto {
   @ApiProperty({
     enum: ["user", "assistant"],
     description: "消息角色"
