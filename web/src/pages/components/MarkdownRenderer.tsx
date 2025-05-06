@@ -7,7 +7,6 @@ import { CopyOutlined } from "@ant-design/icons";
 // import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useAppSelector } from "@/store";
 import { CSSProperties, useState } from "react";
-import { TPrism } from "@/enum/prism";
 interface IMarkdownRendererProps {
   markdown: string;
 }
