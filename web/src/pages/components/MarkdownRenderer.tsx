@@ -4,8 +4,10 @@ import rehypeColorChips from "rehype-color-chips";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { CopyOutlined } from "@ant-design/icons";
-import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism";
-
+// import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { useAppSelector } from "@/store";
+import { CSSProperties, useState } from "react";
+import { TPrism } from "@/enum/prism";
 interface IMarkdownRendererProps {
   markdown: string;
 }
@@ -14,6 +16,17 @@ interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
+  const { prism } = useAppSelector(state => state.syntaxHighlighter);
+  const [themeStyle, setThemeStyle] = useState<{ [key: string]: CSSProperties }>();
+  const getThemeStyle = async () => {
+    try {
+      const theme = await import("react-syntax-highlighter/dist/cjs/styles/prism");
+      setThemeStyle(theme[prism] || theme.default);
+    } catch (error) {
+      console.error("Failed to load theme:", error);
+    }
+  };
+  getThemeStyle();
   return (
     <div className="markdown-content prose max-w-none">
       <ReactMarkdown

@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useSelector, useDispatch } from "react-redux";
 import chatStore from "./modules/chat";
+import syntaxHighlighterStore from "./modules/syntaxHighlighter";
 
 // * 创建 store 组合子模块
 const store = configureStore({
   reducer: {
     // * useSelector 将 store 数据映射到组件中的取值字段 const { messages } = chatStore(state => state.messages)
     chat: chatStore,
+    syntaxHighlighter:syntaxHighlighterStore
   },
 });
 
