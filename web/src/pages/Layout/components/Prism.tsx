@@ -17,6 +17,11 @@ const items: MenuProps["items"] = [
 export const Prism = () => {
   const { prism } = useAppSelector(state => state.syntaxHighlighter);
   const dispatch = useAppDispatch();
+  /**
+   * 处理 Prism 主题切换的点击事件
+   * @param param0 Menu组件的点击事件参数，包含被点击项的key值
+   * @description 当用户点击菜单项时，将dispatch一个action来更新Prism的主题
+   */
   const handlePrismClick: MenuProps["onClick"] = ({ key }) => {
     dispatch(setPrismTheme(key as TPrism));
   };

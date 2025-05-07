@@ -202,6 +202,21 @@ export class ChatService {
       return subject.asObservable();
     }
   }
+  /**
+   * 根据对话消息生成对话标题
+   * 
+   * @param messages - 对话消息内容
+   * @returns 返回生成的标题字符串
+   * 
+   * @description
+   * 该方法通过 OpenAI API 分析对话内容,生成一个简洁准确的中文标题
+   * - 标题长度不超过15个字
+   * - 准确反映代码或问题的核心内容
+   * - 优先使用中文描述
+   * - 避免使用模糊词汇,尽量具体
+   * 
+   * @throws 如果 OpenAI 服务未初始化或API调用失败
+   */
   async getDialogueTitle(messages: ChatMessageDto) {
     if (!this.openai) {
       await this.createChat();

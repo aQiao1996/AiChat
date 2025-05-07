@@ -47,7 +47,16 @@ const MyInput = ({ sendMessage, eventSource, ref }: IMyInputProps) => {
   // 暴露方法
   useImperativeHandle(ref, () => ({ setSendBtnState }));
 
-  // 处理发送
+  /**
+   * 处理文本输入框的确认事件
+   * @param event - 键盘事件对象
+   * 
+   * 功能说明:
+   * 1. 当输入为空或状态为loading/answering时,阻止默认行为
+   * 2. loading状态下提示用户等待
+   * 3. Enter键(非Shift)触发消息发送
+   * 4. Shift+Enter实现换行,并维护光标位置
+   */
   const handleConfirm = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (value.trim() === "" || ["loading", "answering"].includes(sendBtnState)) {
       event.preventDefault();

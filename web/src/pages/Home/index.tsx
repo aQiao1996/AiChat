@@ -33,6 +33,17 @@ const Home = () => {
   const [eventSource, setEventSource] = useState<TEventSource>();
   const currentChatInfo = useRef<{ title: string; chatId: number }>(null);
 
+  /**
+   * 发送消息并创建聊天会话
+   * @param message - 用户输入的消息内容
+   * @description
+   * 1. 设置加载状态
+   * 2. 创建新的聊天会话
+   * 3. 添加用户消息到消息列表
+   * 4. 设置聊天标题
+   * 5. 创建聊天流式响应
+   * @throws {Error} 当请求失败时抛出错误
+   */
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
     try {
@@ -49,6 +60,20 @@ const Home = () => {
     }
   };
 
+  /**
+   * 创建聊天流式数据连接
+   * @description 使用 EventSource 建立与服务器的流式连接,处理聊天消息的实时接收和状态更新
+   * @param {IStreamParams} params - 包含聊天ID和模型参数
+   * @remarks
+   * - 处理三种消息类型:
+   *   - reasoning: AI思考过程
+   *   - answer: AI回答内容
+   *   - complete: 回答完成
+   * - 记录并计算AI思考时间
+   * - 更新UI状态(loading、按钮等)
+   * - 保存聊天历史记录
+   * - 错误处理
+   */
   const createChatStream = (params: IStreamParams) => {
     const eventSource = new EventSourcePolyfill(
       `${import.meta.env.VITE_APP_BASE_URL}/chat/chatStream?chatId=${params.chatId}&model=${

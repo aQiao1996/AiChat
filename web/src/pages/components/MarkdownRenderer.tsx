@@ -17,6 +17,12 @@ interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
 const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
   const { prism } = useAppSelector(state => state.syntaxHighlighter);
   const [themeStyle, setThemeStyle] = useState<{ [key: string]: CSSProperties }>();
+  /**
+   * 异步获取代码高亮主题样式
+   * 从 react-syntax-highlighter 库中导入指定的 prism 主题
+   * 如果指定主题不存在则使用默认主题
+   * @throws 当主题加载失败时会在控制台输出错误信息
+   */
   const getThemeStyle = async () => {
     try {
       const theme = await import("react-syntax-highlighter/dist/cjs/styles/prism");
