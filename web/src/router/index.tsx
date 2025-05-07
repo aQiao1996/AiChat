@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Layout from "@/pages/Layout";
 
@@ -7,6 +8,10 @@ export const router = [
   {
     path: "/",
     element: <Navigate to="/home" />, // 重定向
+  },
+  {
+    path: "/login",
+    element: <Login />, // 重定向
   },
   {
     element: <Layout />,
