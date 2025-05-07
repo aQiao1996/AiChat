@@ -102,8 +102,10 @@ const chatStore = createSlice({
     setTitle(state, { payload }: { payload: string }) {
       state.title = payload;
     },
-    setHistory(state, { payload }: { payload: IHistory }) {
-      state.history.push(payload);
+    setHistory(state, { payload }: { payload: { type: "add" | "delete"; data: IHistory } }) {
+      if (payload.type === "add") {
+        state.history.push(payload.data);
+      }
     },
   },
 });

@@ -96,7 +96,8 @@ const Home = () => {
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
         if (currentChatInfo.current) {
-          dispatch(setHistory({ ...currentChatInfo.current, messages: [{ role, content: answerResult }] }));
+          const data = { ...currentChatInfo.current, messages: [{ role, content: answerResult }] };
+          dispatch(setHistory({ type: "add", data }));
         }
         MyInputRef.current?.setSendBtnState("default");
         // 如果有思考答案
