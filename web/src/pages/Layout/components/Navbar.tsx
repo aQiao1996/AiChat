@@ -16,6 +16,7 @@ const items: MenuProps["items"] = [
 ];
 
 const Navbar = () => {
+  const { history } = useAppSelector(state => state.chat);
   return (
     <div className="p-24">
       {/*  */}
@@ -26,19 +27,21 @@ const Navbar = () => {
       </div>
       <Divider />
       {/*  */}
-      <div className="h-40 text-16">
+      <div className="h-40 text-16 border-1 border-[#666] rounded-8 flex items-center justify-center cursor-pointer hover:border-[#4096ff] hover:text-[#4096ff]">
         新对话
         <MessageOutlined className="ml-8" />
       </div>
       <Divider />
       {/*  */}
       <div>
-        <Dropdown menu={{ items }}>
-          <div className="!text-[#333] flex cursor-pointer border-1 border-transparent p-4 hover:border-1 hover:border-[#333] hover:rounded-8">
-            <span className="text-16 mr-8 flex-1">AI对话</span>
-            <MoreOutlined />
-          </div>
-        </Dropdown>
+        {history.map(item => (
+          <Dropdown menu={{ items }} key={item.chatId}>
+            <div className="!text-[#333] flex cursor-pointer border-1 border-transparent p-4 hover:border-1 hover:border-[#333] hover:rounded-8">
+              <span className="text-16 mr-8 flex-1">{item.title}</span>
+              <MoreOutlined />
+            </div>
+          </Dropdown>
+        ))}
       </div>
     </div>
   );

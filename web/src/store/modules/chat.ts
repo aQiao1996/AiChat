@@ -32,7 +32,7 @@ const initialState: IChatStore = {
   currentReasoning: "", // 当前思考
   isLoading: false,
   reasoningTime: undefined, // 思考用时
-  title: "AI对话", // 标题
+  title: "新对话", // 标题
   history: [], // 历史记录
 };
 
