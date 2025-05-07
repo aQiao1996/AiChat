@@ -1,9 +1,11 @@
 import { Prism } from "./Prism";
+import { useAppSelector } from "@/store";
 
 const MyHeader = () => {
+  const { title } = useAppSelector(state => state.chat);
   return (
     <div className="flex items-center justify-between">
-      <div>left</div>
+      <div className="text-20 font-bold text-gray-800">{title}</div>
       <div>
         <Prism />
       </div>

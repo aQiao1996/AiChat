@@ -4,7 +4,15 @@ import Content from "./components/Content";
 import MyInput from "./components/MyInput";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { EventSourcePolyfill } from "event-source-polyfill";
-import { createChat, addMessages, updateCurrentMessage, setLoading, setReasoningTime } from "@/store/modules/chat";
+import {
+  createChat,
+  addMessages,
+  updateCurrentMessage,
+  setLoading,
+  setReasoningTime,
+  setTitle,
+  setHistory,
+} from "@/store/modules/chat";
 import type { IMessage, IModel } from "@/types/chat";
 
 interface IStreamParams {
@@ -23,6 +31,7 @@ const Home = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { model } = useAppSelector(state => state.chat);
   const [eventSource, setEventSource] = useState<TEventSource>();
+  const currentChatInfo = useRef<{ title: string; chatId: number }>(null);
 
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
@@ -31,6 +40,8 @@ const Home = () => {
       dispatch(addMessages({ role: "user", content: message }));
       const chatId = data.id;
       if (!chatId) return;
+      dispatch(setTitle(data.title));
+      currentChatInfo.current = data;
       createChatStream({ chatId, model });
     } catch (error: any) {
       dispatch(setLoading(false));
@@ -84,6 +95,9 @@ const Home = () => {
         console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
+        if (currentChatInfo.current) {
+          dispatch(setHistory({ ...currentChatInfo.current, messages: [{ role, content: answerResult }] }));
+        }
         MyInputRef.current?.setSendBtnState("default");
         // 如果有思考答案
         const messageItem: IMessage = { content: answerResult, role };

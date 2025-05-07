@@ -8,9 +8,16 @@ interface IChatStore {
   currentReasoning: string;
   isLoading: boolean;
   reasoningTime?: number | string;
+  title: string;
+  history: IHistory[];
 }
 interface IChatParams {
   content: string;
+}
+interface IHistory {
+  title: string;
+  chatId: number;
+  messages: IMessage[];
 }
 
 const initialState: IChatStore = {
@@ -25,11 +32,13 @@ const initialState: IChatStore = {
   currentReasoning: "", // 当前思考
   isLoading: false,
   reasoningTime: undefined, // 思考用时
+  title: "AI对话", // 标题
+  history: [], // 历史记录
 };
 
 export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
   const body = JSON.stringify({
-    messages: [{ role: "user", content: params.content }],
+    messages: { role: "user", content: params.content },
   });
   try {
     const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/chat/createChat`, {
@@ -90,9 +99,16 @@ const chatStore = createSlice({
     setReasoningTime(state, { payload }: { payload: number | string }) {
       state.reasoningTime = payload;
     },
+    setTitle(state, { payload }: { payload: string }) {
+      state.title = payload;
+    },
+    setHistory(state, { payload }: { payload: IHistory }) {
+      state.history.push(payload);
+    },
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { addMessages, updateModel, updateCurrentMessage, setLoading, setReasoningTime } = chatStore.actions;
+export const { addMessages, updateModel, updateCurrentMessage, setLoading, setReasoningTime, setTitle, setHistory } =
+  chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;

@@ -2,11 +2,12 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import OpenAI from "openai";
+import { Subject, Observable } from "rxjs";
+import { get_encoding } from "tiktoken";
 import { getTokenUserInfo } from "src/utils/index";
 import { Chat } from "./entities/chat.entity";
 import { Message } from "./entities/message.entity";
-import { Subject, Observable } from "rxjs";
-import { get_encoding } from "tiktoken";
+import { User } from "src/user/entities/user.entity";
 import type { Repository } from "typeorm";
 import type { Request } from "express";
 import type { CreateChatDto, ChatMessageDto } from "./dto/create-chat.dto";
@@ -25,6 +26,7 @@ export class ChatService {
   constructor(
     @InjectRepository(Chat) private readonly chat: Repository<Chat>,
     @InjectRepository(Message) private readonly message: Repository<Message>,
+    @InjectRepository(User) private readonly user: Repository<User>,
     private readonly configService: ConfigService
   ) {}
 
@@ -170,7 +172,7 @@ export class ChatService {
           }
           // 完成后添加 AI 回复的消息
           const message = new Message();
-          message.content = { messages: [{ content: answerResult, role: "assistant" }] };
+          message.content = { messages: { content: answerResult, role: "assistant" } };
           message.role = "assistant";
           message.timestamp = new Date();
           message.chat = chat; // 关联 chat 实体
@@ -200,7 +202,7 @@ export class ChatService {
       return subject.asObservable();
     }
   }
-  async getDialogueTitle(messages: ChatMessageDto[]) {
+  async getDialogueTitle(messages: ChatMessageDto) {
     if (!this.openai) {
       await this.createChat();
     }
@@ -212,7 +214,7 @@ export class ChatService {
           "你是一个专业的代码分析助手，擅长从代码和问题描述中提取精准的标题。" +
           "请根据以下信息生成一个简洁、准确的标题，避免冗余描述。",
       },
-      ...messages,
+      messages,
       {
         role: "user",
         content:
@@ -249,17 +251,34 @@ export class ChatService {
 
     const token = request.get("authorization");
     const userInfo = getTokenUserInfo(token);
+    const { chatId, ...rest } = createChatDto;
+    let title = "";
 
+    let userRes = await this.user.findOne({
+      where: { id: userInfo.id },
+      relations: ["chat"],
+    });
+    // 如果没有聊天记录
+    if (userRes.chat.length === 0) {
+      // 如果用户没有聊天记录，创建新的聊天记录
+      const chat = new Chat();
+      chat.user = userRes;
+      await this.chat.save(chat);
+      userRes = await this.user.findOne({
+        where: { id: userInfo.id },
+        relations: ["chat"],
+      });
+      title = await this.getDialogueTitle(createChatDto.messages);
+    }
     let chatRes = await this.chat.findOne({
-      where: { userId: userInfo.id },
+      where: { id: chatId || userRes.chat[0].id },
       relations: ["messages"],
     });
 
     const message = new Message();
-    message.content = createChatDto;
+    message.content = rest;
     message.role = "user";
     message.timestamp = new Date();
-    let title = "";
 
     if (chatRes) {
       // 如果聊天记录已存在，添加新消息
@@ -268,8 +287,6 @@ export class ChatService {
     } else {
       // 如果聊天记录不存在，创建新聊天记录
       chatRes = new Chat();
-      title = await this.getDialogueTitle(createChatDto.messages);
-      chatRes.userId = userInfo.id;
       chatRes.messages = [message];
       await this.chat.save(chatRes);
     }

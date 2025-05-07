@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsString, ValidateNested } from "class-validator";
-import { Type } from "class-transformer";
+import { IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator";
+import { Transform, Type } from "class-transformer";
 
 export class ChatMessageDto {
   @ApiProperty({
     enum: ["user", "assistant"],
-    description: "消息角色"
+    description: "消息角色",
   })
   @IsNotEmpty()
   @IsString()
@@ -18,12 +18,19 @@ export class ChatMessageDto {
 }
 
 export class CreateChatDto {
-  @ApiProperty({ 
-    type: [ChatMessageDto],
-    description: "消息列表"
+  @ApiProperty({
+    type: () => ChatMessageDto,
+    description: "消息",
   })
-  @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => ChatMessageDto)
-  messages: ChatMessageDto[];
+  messages: ChatMessageDto;
+
+  @ApiProperty({ description: "消息id", required: false })
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === "") {
+      return undefined; // 忽略无效值
+    }
+    return Number(value);
+  })
+  chatId?: number;
 }

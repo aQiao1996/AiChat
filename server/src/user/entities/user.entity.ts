@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from "typeorm";
+import { Chat } from "src/chat/entities/chat.entity";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from "typeorm";
 // https://typeorm.bootcss.com/entities#%60mysql%60/%60mariadb%60%E7%9A%84%E5%88%97%E7%B1%BB%E5%9E%8B
 @Entity()
 export class User {
@@ -18,4 +19,10 @@ export class User {
 
   @CreateDateColumn({ comment: "账号创建时间" })
   createDate: Date;
+
+  @OneToMany(() => Chat, chat => chat.user, {
+    eager: false, // 避免 N+1 查询问题（默认 lazy 加载）
+    cascade: ["remove"], // 级联保存/更新消息
+  })
+  chat: Chat[];
 }
