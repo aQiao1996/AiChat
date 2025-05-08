@@ -33,6 +33,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const { model } = useAppSelector(state => state.chat);
+  const { token } = useAppSelector(state => state.user);
   const [eventSource, setEventSource] = useState<TEventSource>();
   const currentChatInfo = useRef<{ title: string; chatId: number }>(null);
 
@@ -90,7 +91,7 @@ const Home = () => {
       `${import.meta.env.VITE_APP_BASE_URL}/chat/chatStream?chatId=${params.chatId}&model=${
         params.model || "deepseek-v3"
       }`,
-      { headers: { Authorization: import.meta.env.VITE_APP_TOKEN } }
+      { headers: { Authorization: token } }
     );
     setEventSource(eventSource);
 
