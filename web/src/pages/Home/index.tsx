@@ -32,7 +32,7 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { model } = useAppSelector(state => state.chat);
+  const { model, history } = useAppSelector(state => state.chat);
   const { token } = useAppSelector(state => state.user);
   const [eventSource, setEventSource] = useState<TEventSource>();
   const currentChatInfo = useRef<{ title: string; chatId: number }>(null);
@@ -56,7 +56,7 @@ const Home = () => {
       const chatId = data.id;
       if (!chatId) return;
       dispatch(setTitle(data.title));
-      currentChatInfo.current = data;
+      currentChatInfo.current = { chatId, title: data.title };
       createChatStream({ chatId, model });
     } catch (error: any) {
       if (error.status === 401) {
@@ -133,8 +133,18 @@ const Home = () => {
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
         if (currentChatInfo.current) {
-          const data = { ...currentChatInfo.current, messages: [{ role, content: answerResult }] };
-          dispatch(setHistory({ type: "add", data }));
+          const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
+          if (currentChatHistory) {
+            currentChatHistory.messages.push({ role, content: answerResult });
+            dispatch(setHistory({ type: "add", data: currentChatHistory }));
+          } else {
+            dispatch(
+              setHistory({
+                type: "add",
+                data: { ...currentChatInfo.current, messages: [{ role, content: answerResult }] },
+              })
+            );
+          }
         }
         MyInputRef.current?.setSendBtnState("default");
         // 如果有思考答案

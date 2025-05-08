@@ -17,6 +17,7 @@ const items: MenuProps["items"] = [
 
 const Navbar = () => {
   const { history } = useAppSelector(state => state.chat);
+  
   return (
     <div className="p-24">
       {/*  */}
