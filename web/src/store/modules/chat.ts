@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { IMessage, IModel } from "@/types/chat";
+import type { RootState } from "..";
 
 interface IChatStore {
   messages: IMessage[];
@@ -36,33 +37,38 @@ const initialState: IChatStore = {
   history: [], // 历史记录
 };
 
-export const createChat = createAsyncThunk("chat/createChat", async (params: IChatParams, { rejectWithValue }) => {
-  const body = JSON.stringify({
-    messages: { role: "user", content: params.content },
-  });
-  try {
-    const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/chat/createChat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: import.meta.env.VITE_APP_TOKEN,
-      },
-      body,
+export const createChat = createAsyncThunk(
+  "chat/createChat",
+  async (params: IChatParams, { rejectWithValue, getState }) => {
+    const body = JSON.stringify({
+      messages: { role: "user", content: params.content },
     });
+    const { user } = getState() as RootState;
+    const token = user.token;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/chat/createChat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body,
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      return rejectWithValue({
+        message: error instanceof Error ? error.message : "未知错误",
+        ...(error as any)?.response?.data,
+      });
     }
-
-    return await response.json();
-  } catch (error) {
-    return rejectWithValue({
-      message: error instanceof Error ? error.message : "未知错误",
-      ...(error as any)?.response?.data,
-    });
   }
-});
+);
 
 const chatStore = createSlice({
   name: "chat",
