@@ -14,6 +14,8 @@ import {
   setHistory,
 } from "@/store/modules/chat";
 import type { IMessage, IModel } from "@/types/chat";
+import { useNavigate } from "react-router-dom";
+import { setToken } from "@/store/modules/user";
 
 interface IStreamParams {
   model?: IModel;
@@ -28,6 +30,7 @@ export type TEventSource = EventSourcePolyfill | undefined;
 const Home = () => {
   const MyInputRef = useRef<IMyInputChildMethods>(null);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const { model } = useAppSelector(state => state.chat);
   const [eventSource, setEventSource] = useState<TEventSource>();
@@ -55,6 +58,14 @@ const Home = () => {
       currentChatInfo.current = data;
       createChatStream({ chatId, model });
     } catch (error: any) {
+      if (error.status === 401) {
+        dispatch(setToken(""));
+        messageApi.error("登录过期，请重新登录");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
+        return;
+      }
       dispatch(setLoading(false));
       messageApi.error(error.message || "未知错误");
     }

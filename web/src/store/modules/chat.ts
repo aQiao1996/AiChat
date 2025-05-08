@@ -54,17 +54,29 @@ export const createChat = createAsyncThunk(
         },
         body,
       });
-
+      
+      // todo 懒得统一封装
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+        if (response.status === 401) {
+          return rejectWithValue({
+            status: response.status, // 传递状态码
+            message: errorData?.message || "token 过期，请重新登录",
+          });
+        }
+        return rejectWithValue({
+          status: response.status, // 传递状态码
+          message: errorData?.message || `HTTP error! status: ${response.status}`,
+        });
       }
 
       return await response.json();
     } catch (error) {
+      // 处理非 HTTP 错误（如网络错误、CORS、JSON.parse 错误等）
+      console.error("请求失败:", error);
       return rejectWithValue({
+        status: 0, // 表示非 HTTP 错误
         message: error instanceof Error ? error.message : "未知错误",
-        ...(error as any)?.response?.data,
       });
     }
   }
