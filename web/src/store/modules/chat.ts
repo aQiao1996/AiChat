@@ -15,6 +15,7 @@ interface IChatStore {
 }
 interface IChatParams {
   content: string;
+  chatId: number;
 }
 export interface IHistory {
   title: string;
@@ -44,6 +45,7 @@ export const createChat = createAsyncThunk(
   async (params: IChatParams, { rejectWithValue, getState }) => {
     const body = JSON.stringify({
       messages: { role: "user", content: params.content },
+      chatId: params.chatId,
     });
     const { user } = getState() as RootState;
     const token = user.token;

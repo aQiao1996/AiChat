@@ -33,7 +33,7 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { model, history } = useAppSelector(state => state.chat);
+  const { model, history, currentChatId } = useAppSelector(state => state.chat);
   const { token } = useAppSelector(state => state.user);
   const [eventSource, setEventSource] = useState<TEventSource>();
   const currentChatInfo = useRef<{ title: string; chatId: number }>(null);
@@ -52,7 +52,7 @@ const Home = () => {
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
     try {
-      const { data } = await dispatch(createChat({ content: message })).unwrap();
+      const { data } = await dispatch(createChat({ content: message, chatId: currentChatId })).unwrap();
       dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       const chatId = data.id;
       if (!chatId) return;

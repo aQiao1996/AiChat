@@ -204,17 +204,17 @@ export class ChatService {
   }
   /**
    * 根据对话消息生成对话标题
-   * 
+   *
    * @param messages - 对话消息内容
    * @returns 返回生成的标题字符串
-   * 
+   *
    * @description
    * 该方法通过 OpenAI API 分析对话内容,生成一个简洁准确的中文标题
    * - 标题长度不超过15个字
    * - 准确反映代码或问题的核心内容
    * - 优先使用中文描述
    * - 避免使用模糊词汇,尽量具体
-   * 
+   *
    * @throws 如果 OpenAI 服务未初始化或API调用失败
    */
   async getDialogueTitle(messages: ChatMessageDto) {
@@ -261,35 +261,21 @@ export class ChatService {
    *
    * 每条消息都包含内容、角色和时间戳信息
    */
-  async create(createChatDto: CreateChatDto, request: Request) {
+  async create(createChatDto: CreateChatDto) {
     await this.createChat();
 
-    const token = request.get("authorization");
-    const userInfo = getTokenUserInfo(token);
     const { chatId, ...rest } = createChatDto;
     let title = "";
+    let chatRes: Chat;
 
-    let userRes = await this.user.findOne({
-      where: { id: userInfo.id },
-      relations: ["chat"],
-    });
-    // 如果没有聊天记录
-    if (userRes.chat.length === 0) {
-      // 如果用户没有聊天记录，创建新的聊天记录
-      const chat = new Chat();
-      chat.user = userRes;
-      await this.chat.save(chat);
-      userRes = await this.user.findOne({
-        where: { id: userInfo.id },
-        relations: ["chat"],
+    if (chatId !== 0) {
+      chatRes = await this.chat.findOne({
+        where: { id: chatId },
+        relations: ["messages"],
       });
+    } else {
       title = await this.getDialogueTitle(createChatDto.messages);
     }
-    let chatRes = await this.chat.findOne({
-      where: { id: chatId || userRes.chat[0].id },
-      relations: ["messages"],
-    });
-
     const message = new Message();
     message.content = rest;
     message.role = "user";
