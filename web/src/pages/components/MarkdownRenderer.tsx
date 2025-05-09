@@ -6,7 +6,7 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { CopyOutlined } from "@ant-design/icons";
 // import { synthwave84 as themeStyle } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useAppSelector } from "@/store";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 interface IMarkdownRendererProps {
   markdown: string;
 }
@@ -31,7 +31,9 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
       console.error("Failed to load theme:", error);
     }
   };
-  getThemeStyle();
+  useEffect(() => {
+    getThemeStyle();
+  }, [prism]);
   return (
     <div className="markdown-content prose max-w-none">
       <ReactMarkdown

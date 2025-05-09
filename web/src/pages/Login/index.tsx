@@ -1,6 +1,6 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginFormPage, ProConfigProvider, ProFormText } from "@ant-design/pro-components";
-import { message, Tabs, theme } from "antd";
+import { message, Tabs, theme, type TabsProps } from "antd";
 import { useState } from "react";
 import AvatarImage from "@/assets/images/avatar.png";
 import { useAppDispatch } from "@/store";
@@ -8,6 +8,8 @@ import { login, setToken, type ILoginParams } from "@/store/modules/user";
 import { useNavigate } from "react-router-dom";
 
 type LoginType = "account";
+
+const items: TabsProps["items"] = [{ key: "account", label: "账号密码登录" }];
 
 const Page = () => {
   const [loginType, setLoginType] = useState<LoginType>("account");
@@ -42,9 +44,12 @@ const Page = () => {
           initialValues={{ username: "panghu", password: "panghu666" }}
           onFinish={onFinish}
         >
-          <Tabs centered activeKey={loginType} onChange={activeKey => setLoginType(activeKey as LoginType)}>
-            <Tabs.TabPane key={"account"} tab={"账号密码登录"} />
-          </Tabs>
+          <Tabs
+            centered
+            items={items}
+            activeKey={loginType}
+            onChange={activeKey => setLoginType(activeKey as LoginType)}
+          ></Tabs>
           {loginType === "account" && (
             <>
               <ProFormText
