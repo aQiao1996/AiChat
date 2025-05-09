@@ -11,6 +11,7 @@ interface IChatStore {
   reasoningTime?: number | string;
   title: string;
   history: IHistory[];
+  currentChatId: number;
 }
 interface IChatParams {
   content: string;
@@ -35,6 +36,7 @@ const initialState: IChatStore = {
   reasoningTime: undefined, // 思考用时
   title: "新对话", // 标题
   history: [], // 历史记录
+  currentChatId: 0, // 当前对话id
 };
 
 export const createChat = createAsyncThunk(
@@ -54,7 +56,7 @@ export const createChat = createAsyncThunk(
         },
         body,
       });
-      
+
       // todo 懒得统一封装
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -125,10 +127,21 @@ const chatStore = createSlice({
         state.history.push(payload.data);
       }
     },
+    setCurrentChatId(state, { payload }: { payload: number }) {
+      state.currentChatId = payload;
+    },
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { addMessages, updateModel, updateCurrentMessage, setLoading, setReasoningTime, setTitle, setHistory } =
-  chatStore.actions;
+export const {
+  addMessages,
+  updateModel,
+  updateCurrentMessage,
+  setLoading,
+  setReasoningTime,
+  setTitle,
+  setHistory,
+  setCurrentChatId,
+} = chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;

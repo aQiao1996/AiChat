@@ -12,6 +12,7 @@ import {
   setReasoningTime,
   setTitle,
   setHistory,
+  setCurrentChatId,
 } from "@/store/modules/chat";
 import type { IMessage, IModel } from "@/types/chat";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +56,7 @@ const Home = () => {
       dispatch(addMessages({ role: "user", content: message }));
       const chatId = data.id;
       if (!chatId) return;
+      dispatch(setCurrentChatId(chatId));
       dispatch(setTitle(data.title));
       currentChatInfo.current = { chatId, title: data.title };
       createChatStream({ chatId, model });

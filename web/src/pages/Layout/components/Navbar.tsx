@@ -1,8 +1,7 @@
-import { Avatar, Divider, Dropdown, Space } from "antd";
+import { Avatar, Divider, Dropdown, type MenuProps } from "antd";
 import { useAppSelector } from "@/store";
 import AvatarImage from "@/assets/images/avatar.png";
 import { MessageOutlined, MoreOutlined } from "@ant-design/icons";
-import type { MenuProps } from "antd";
 
 const items: MenuProps["items"] = [
   {
@@ -16,8 +15,10 @@ const items: MenuProps["items"] = [
 ];
 
 const Navbar = () => {
-  const { history } = useAppSelector(state => state.chat);
-  
+  const { history, currentChatId } = useAppSelector(state => state.chat);
+
+  const handleNewChat = () => {};
+
   return (
     <div className="p-24">
       {/*  */}
@@ -28,7 +29,10 @@ const Navbar = () => {
       </div>
       <Divider />
       {/*  */}
-      <div className="h-40 text-16 border-1 border-[#666] rounded-8 flex items-center justify-center cursor-pointer hover:border-[#4096ff] hover:text-[#4096ff]">
+      <div
+        className="h-40 text-16 border-1 border-[#666] rounded-8 flex items-center justify-center cursor-pointer hover:border-[#4096ff] hover:text-[#4096ff]"
+        onClick={handleNewChat}
+      >
         新对话
         <MessageOutlined className="ml-8" />
       </div>
@@ -37,7 +41,7 @@ const Navbar = () => {
       <div>
         {history.map(item => (
           <Dropdown menu={{ items }} key={item.chatId}>
-            <div className="!text-[#333] flex cursor-pointer border-1 border-transparent p-4 hover:border-1 hover:border-[#333] hover:rounded-8">
+            <div className={`!text-[#333] flex cursor-pointer px-4 py-8 rounded-8 hover:bg-[#eeeeee80] ${currentChatId === item.chatId ? "bg-[#eeeeee80]" : ""}`}>
               <span className="text-16 mr-8 flex-1">{item.title}</span>
               <MoreOutlined />
             </div>
