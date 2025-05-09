@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import { EventSourcePolyfill } from "event-source-polyfill";
 import {
   createChat,
-  addMessages,
+  updateMessages,
   updateCurrentMessage,
   setLoading,
   setReasoningTime,
@@ -53,7 +53,7 @@ const Home = () => {
     dispatch(setLoading(true));
     try {
       const { data } = await dispatch(createChat({ content: message })).unwrap();
-      dispatch(addMessages({ role: "user", content: message }));
+      dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       const chatId = data.id;
       if (!chatId) return;
       dispatch(setCurrentChatId(chatId));
@@ -131,14 +131,15 @@ const Home = () => {
       // 回答完成
       if (type === "complete") {
         eventSource.close();
-        console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
         if (currentChatInfo.current) {
           const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
           if (currentChatHistory) {
-            currentChatHistory.messages.push({ role, content: answerResult });
-            dispatch(setHistory({ type: "add", data: currentChatHistory }));
+            const updatedHistoryItem = Object.assign({}, currentChatHistory, {
+              messages: [...currentChatHistory.messages, { role, content: answerResult }],
+            });
+            dispatch(setHistory({ type: "add", data: updatedHistoryItem }));
           } else {
             dispatch(
               setHistory({
@@ -155,7 +156,7 @@ const Home = () => {
           messageItem.reasoning = reasoningResult;
           messageItem.reasoningTime = (reasoningTimeMs / 1000).toFixed(2);
         }
-        dispatch(addMessages(messageItem));
+        dispatch(updateMessages({ type: "add", data: messageItem }));
       }
     };
 

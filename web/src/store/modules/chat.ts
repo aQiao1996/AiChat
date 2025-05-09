@@ -16,7 +16,7 @@ interface IChatStore {
 interface IChatParams {
   content: string;
 }
-interface IHistory {
+export interface IHistory {
   title: string;
   chatId: number;
   messages: IMessage[];
@@ -90,8 +90,21 @@ const chatStore = createSlice({
   initialState,
   // * 修改数据的同步方法
   reducers: {
-    addMessages(state, { payload }: { payload: IMessage }) {
-      state.messages.push(payload);
+    updateMessages(state, { payload }: { payload: { type: "add" | "update"; data: IMessage | IMessage[] } }) {
+      if (payload.type === "add") {
+        state.messages.push(payload.data as IMessage);
+        return;
+      }
+      if (payload.type === "update") {
+        state.messages = [
+          {
+            role: "assistant",
+            content:
+              "Hi~ 我是`胖虎` 您身边的智能助手，可以为你答疑解惑、精读文档、尽情创作 让胖虎助您轻松工作，多点生活。",
+          },
+        ];
+        state.messages = state.messages.concat(payload.data);
+      }
     },
     updateModel(state, { payload }: { payload: IModel }) {
       state.model = payload;
@@ -134,7 +147,7 @@ const chatStore = createSlice({
 });
 // * 解构并导出 actions 对象的函数
 export const {
-  addMessages,
+  updateMessages,
   updateModel,
   updateCurrentMessage,
   setLoading,
