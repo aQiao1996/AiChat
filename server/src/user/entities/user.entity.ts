@@ -24,5 +24,5 @@ export class User {
     eager: false, // 避免 N+1 查询问题（默认 lazy 加载）
     cascade: ["remove"], // 级联保存/更新消息
   })
-  chat: Chat[];
+  chats: Chat[];
 }

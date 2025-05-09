@@ -13,7 +13,7 @@ export class Chat {
   })
   messages: Message[];
 
-  @ManyToOne(() => User, user => user.chat, {
+  @ManyToOne(() => User, user => user.chats, {
     onDelete: "CASCADE", // 如果 Chat 被删除，关联的 Message 也删除
   })
   user: User;

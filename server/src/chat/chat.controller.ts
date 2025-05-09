@@ -13,8 +13,8 @@ export class ChatController {
   @ApiBody({ type: CreateChatDto })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: "消息id" })
-  create(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.create(createChatDto);
+  create(@Body() createChatDto: CreateChatDto, @Request() request) {
+    return this.chatService.create(createChatDto, request);
   }
 
   @Sse("/chatStream")

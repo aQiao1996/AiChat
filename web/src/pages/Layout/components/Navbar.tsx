@@ -22,7 +22,7 @@ const Navbar = () => {
 
   const handleNewChat = () => {
     dispatch(setCurrentChatId(0));
-    dispatch(setTitle("新的对话"));
+    dispatch(setTitle("新对话"));
     dispatch(updateMessages({ type: "update", data: [] }));
   };
 

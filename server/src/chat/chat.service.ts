@@ -261,21 +261,30 @@ export class ChatService {
    *
    * 每条消息都包含内容、角色和时间戳信息
    */
-  async create(createChatDto: CreateChatDto) {
-    await this.createChat();
-
+  async create(createChatDto: CreateChatDto, request: Request) {
+    const token = request.get("authorization");
+    const userInfo = getTokenUserInfo(token);
     const { chatId, ...rest } = createChatDto;
     let title = "";
-    let chatRes: Chat;
 
-    if (chatId !== 0) {
+    // 获取用户信息
+    const userRes = await this.user.findOne({
+      where: { id: userInfo.id },
+      relations: ["chats"],
+    });
+
+    let chatRes: Chat;
+    // 新消息
+    if (chatId === 0) {
+      title = await this.getDialogueTitle(createChatDto.messages);
+    } else {
       chatRes = await this.chat.findOne({
         where: { id: chatId },
         relations: ["messages"],
       });
-    } else {
-      title = await this.getDialogueTitle(createChatDto.messages);
     }
+
+    // 创建新消息
     const message = new Message();
     message.content = rest;
     message.role = "user";
@@ -283,14 +292,16 @@ export class ChatService {
 
     if (chatRes) {
       // 如果聊天记录已存在，添加新消息
-      chatRes.messages.push(message);
+      chatRes.messages = [...(chatRes.messages || []), message];
       await this.chat.save(chatRes);
     } else {
       // 如果聊天记录不存在，创建新聊天记录
       chatRes = new Chat();
+      chatRes.user = userRes;
       chatRes.messages = [message];
-      await this.chat.save(chatRes);
+      await this.chat.save(chatRes); // cascade 会自动保存 messages
     }
+
     return { id: chatRes.id, title };
   }
 }
