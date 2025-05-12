@@ -276,12 +276,24 @@ export class ChatService {
     let chatRes: Chat;
     // 新消息
     if (chatId === 0) {
+      // 新建聊天记录（自动绑定当前用户）
       title = await this.getDialogueTitle(createChatDto.messages);
+      chatRes = new Chat();
+      chatRes.user = userRes; // 绑定用户
+      chatRes.messages = [];
     } else {
+      // 查询现有聊天记录时，强制校验用户所有权
       chatRes = await this.chat.findOne({
-        where: { id: chatId },
+        where: {
+          id: chatId,
+          user: { id: userInfo.id }, // 只查当前用户的 chat
+        },
         relations: ["messages"],
       });
+
+      if (!chatRes) {
+        throw new Error("Chat not found or access denied");
+      }
     }
 
     // 创建新消息
