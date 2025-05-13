@@ -57,7 +57,7 @@ const Home = () => {
       if (!chatId) return;
       dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       dispatch(setCurrentChatId(chatId));
-      dispatch(setTitle(data.title));
+      currentChatId === 0 && dispatch(setTitle(data.title));
       const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
       // 如果有历史记录
       if (currentChatHistory) {
