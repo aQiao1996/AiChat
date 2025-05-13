@@ -23,6 +23,11 @@ export interface IHistory {
   messages: IMessage[];
 }
 
+interface IHistoryParams {
+  type: "add" | "update" | "delete";
+  data: IHistory;
+}
+
 const initialState: IChatStore = {
   messages: [
     {
@@ -137,9 +142,14 @@ const chatStore = createSlice({
     setTitle(state, { payload }: { payload: string }) {
       state.title = payload;
     },
-    setHistory(state, { payload }: { payload: { type: "add" | "delete"; data: IHistory } }) {
+    setHistory(state, { payload }: { payload: IHistoryParams }) {
       if (payload.type === "add") {
         state.history.push(payload.data);
+      } else if (payload.type === "update") {
+        const index = state.history.findIndex(item => item.chatId === payload.data.chatId);
+        if (index !== -1) {
+          state.history[index] = payload.data;
+        }
       }
     },
     setCurrentChatId(state, { payload }: { payload: number }) {

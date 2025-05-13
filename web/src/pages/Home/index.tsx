@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { message } from "antd";
 import Content from "./components/Content";
 import MyInput from "./components/MyInput";
@@ -13,10 +13,11 @@ import {
   setTitle,
   setHistory,
   setCurrentChatId,
+  type IHistory,
 } from "@/store/modules/chat";
-import type { IMessage, IModel } from "@/types/chat";
 import { useNavigate } from "react-router-dom";
 import { setToken } from "@/store/modules/user";
+import type { IMessage, IModel } from "@/types/chat";
 
 interface IStreamParams {
   model?: IModel;
@@ -33,10 +34,10 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { model, history, currentChatId } = useAppSelector(state => state.chat);
+  const { model, history, title, currentChatId } = useAppSelector(state => state.chat);
   const { token } = useAppSelector(state => state.user);
   const [eventSource, setEventSource] = useState<TEventSource>();
-  const currentChatInfo = useRef<{ title: string; chatId: number }>(null);
+  const currentChatInfo = useRef<IHistory>(null);
 
   /**
    * 发送消息并创建聊天会话
@@ -58,7 +59,20 @@ const Home = () => {
       if (!chatId) return;
       dispatch(setCurrentChatId(chatId));
       dispatch(setTitle(data.title));
-      currentChatInfo.current = { chatId, title: data.title };
+      const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
+      // 如果有历史记录
+      if (currentChatHistory) {
+        const updatedHistoryItem = Object.assign({}, currentChatHistory, {
+          messages: [...currentChatHistory.messages, { role: "user", content: message }],
+        });
+        currentChatInfo.current = updatedHistoryItem;
+      } else {
+        currentChatInfo.current = {
+          chatId,
+          title: currentChatId === 0 ? data.title : title,
+          messages: [{ role: "user", content: message }],
+        };
+      }
       createChatStream({ chatId, model });
     } catch (error: any) {
       if (error.status === 401) {
@@ -110,7 +124,7 @@ const Home = () => {
     eventSource.onmessage = function (this, event) {
       MyInputRef.current?.setSendBtnState("answering");
       const { type, content, role } = JSON.parse(event.data || "{}");
-      // console.log("🚀 ~ createChatStream ~ result:", type, content, role);
+
       // 思考
       if (type === "reasoning") {
         if (!reasoningStartTime) {
@@ -133,22 +147,10 @@ const Home = () => {
         eventSource.close();
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
-        if (currentChatInfo.current) {
-          const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
-          if (currentChatHistory) {
-            const updatedHistoryItem = Object.assign({}, currentChatHistory, {
-              messages: [...currentChatHistory.messages, { role, content: answerResult }],
-            });
-            dispatch(setHistory({ type: "add", data: updatedHistoryItem }));
-          } else {
-            dispatch(
-              setHistory({
-                type: "add",
-                data: { ...currentChatInfo.current, messages: [{ role, content: answerResult }] },
-              })
-            );
-          }
-        }
+        const updatedHistoryItem = Object.assign({}, currentChatInfo.current, {
+          messages: [...(currentChatInfo.current?.messages ?? []), { role, content: answerResult }],
+        });
+        dispatch(setHistory({ type: "update", data: updatedHistoryItem }));
         MyInputRef.current?.setSendBtnState("default");
         // 如果有思考答案
         const messageItem: IMessage = { content: answerResult, role };
@@ -167,6 +169,12 @@ const Home = () => {
       messageApi.error("网络异常，请稍后再试");
     };
   };
+
+  useEffect(() => {
+    return () => {
+      if (eventSource) eventSource.close();
+    };
+  }, [eventSource]);
 
   return (
     <>
