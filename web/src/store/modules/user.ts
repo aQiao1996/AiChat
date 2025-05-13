@@ -18,9 +18,7 @@ export const login = createAsyncThunk("user/login", async (params: ILoginParams,
   try {
     const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/user/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body,
     });
 

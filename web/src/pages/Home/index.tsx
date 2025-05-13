@@ -40,23 +40,22 @@ const Home = () => {
   const currentChatInfo = useRef<IHistory>(null);
 
   /**
-   * 发送消息并创建聊天会话
+   * 发送消息并处理响应
    * @param message - 用户输入的消息内容
    * @description
-   * 1. 设置加载状态
-   * 2. 创建新的聊天会话
-   * 3. 添加用户消息到消息列表
-   * 4. 设置聊天标题
-   * 5. 创建聊天流式响应
-   * @throws {Error} 当请求失败时抛出错误
+   * 1. 发送消息到服务端创建新的对话
+   * 2. 更新本地消息列表和对话历史
+   * 3. 设置当前对话ID和标题
+   * 4. 创建消息流式响应
+   * 5. 处理错误情况(登录过期、网络错误等)
    */
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
     try {
       const { data } = await dispatch(createChat({ content: message, chatId: currentChatId })).unwrap();
-      dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       const chatId = data.id;
       if (!chatId) return;
+      dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       dispatch(setCurrentChatId(chatId));
       dispatch(setTitle(data.title));
       const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
@@ -73,6 +72,7 @@ const Home = () => {
           messages: [{ role: "user", content: message }],
         };
       }
+      // 创建消息流式响应
       createChatStream({ chatId, model });
     } catch (error: any) {
       if (error.status === 401) {

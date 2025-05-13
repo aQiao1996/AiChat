@@ -42,7 +42,7 @@ const initialState: IChatStore = {
   reasoningTime: undefined, // 思考用时
   title: "新对话", // 标题
   history: [], // 历史记录
-  currentChatId: 0, // 当前对话id
+  currentChatId: 0, // 当前对话id,新对话是0
 };
 
 export const createChat = createAsyncThunk(
@@ -57,10 +57,7 @@ export const createChat = createAsyncThunk(
     try {
       const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/chat/createChat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
+        headers: { "Content-Type": "application/json", Authorization: token },
         body,
       });
 
@@ -69,12 +66,12 @@ export const createChat = createAsyncThunk(
         const errorData = await response.json().catch(() => null);
         if (response.status === 401) {
           return rejectWithValue({
-            status: response.status, // 传递状态码
+            status: response.status,
             message: errorData?.message || "token 过期，请重新登录",
           });
         }
         return rejectWithValue({
-          status: response.status, // 传递状态码
+          status: response.status,
           message: errorData?.message || `HTTP error! status: ${response.status}`,
         });
       }

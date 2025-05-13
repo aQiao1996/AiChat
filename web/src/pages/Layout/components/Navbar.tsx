@@ -19,6 +19,7 @@ const items: MenuProps["items"] = [
 const Navbar = () => {
   const dispatch = useAppDispatch();
   const { history, currentChatId } = useAppSelector(state => state.chat);
+  console.log("🚀 ~ Navbar ~ history:", history);
 
   const handleNewChat = () => {
     dispatch(setCurrentChatId(0));
