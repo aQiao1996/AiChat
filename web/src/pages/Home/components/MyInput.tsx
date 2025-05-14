@@ -87,12 +87,14 @@ const MyInput = ({ sendMessage, eventSource, ref }: IMyInputProps) => {
       target.selectionEnd = startIdx + 1;
     }, 0);
   };
+
   // 是否深度思考
   const handleDeepThinking = () => {
     const newDeepThinking = !deepThinking;
     dispatch(updateModel(newDeepThinking ? "deepseek-r1" : "deepseek-v3"));
     setDeepThinking(newDeepThinking);
   };
+  
   // 停止回答
   const handleStopAnswer = () => {
     setSendBtnState("default");
