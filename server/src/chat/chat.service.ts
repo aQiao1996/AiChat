@@ -316,6 +316,13 @@ export class ChatService {
 
     return { id: chatRes.id, title };
   }
+  /**
+   * 获取用户的消息历史记录
+   * 
+   * @param request 请求对象，包含authorization头部和chatId查询参数
+   * @returns 返回指定聊天ID的消息记录或用户的所有消息记录
+   * @description 根据请求中的token验证用户身份，若提供chatId则返回该聊天的消息，否则返回用户所有聊天记录
+   */
   getMessagesHistory(request: Request) {
     const token = request.get("authorization");
     const chatId = request.query.chatId;
