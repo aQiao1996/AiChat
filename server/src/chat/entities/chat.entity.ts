@@ -18,6 +18,9 @@ export class Chat {
   })
   user: User;
 
+  @Column({ comment: "聊天标题" })
+  title?: string;
+
   @CreateDateColumn({ comment: "聊天创建时间" })
   createDate: Date;
 }

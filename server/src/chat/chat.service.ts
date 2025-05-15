@@ -280,6 +280,7 @@ export class ChatService {
       title = await this.getDialogueTitle(createChatDto.messages);
       chatRes = new Chat();
       chatRes.user = userRes; // 绑定用户
+      chatRes.title = title;
       chatRes.messages = [];
     } else {
       // 查询现有聊天记录时，强制校验用户所有权
@@ -317,18 +318,23 @@ export class ChatService {
     return { id: chatRes.id, title };
   }
   /**
-   * 根据请求头中的token获取用户信息，并查询该用户的所有聊天记录ID
-   * @param request 包含authorization头的请求对象
-   * @returns 按创建时间降序排列的聊天记录ID数组
+   * 获取当前用户的所有聊天会话ID和标题
+   * @param request HTTP请求对象，需包含Authorization头
+   * @returns 返回按创建时间降序排列的聊天会话数组，包含id和title字段
    */
-  async getChatIds(request: Request) {
+  async getUserChatInfos(request: Request) {
     const token = request.get("authorization");
     const userInfo = getTokenUserInfo(token);
     const chatRes = await this.chat.find({
       where: { user: { id: userInfo.id } },
       // select: ["id"],
     });
-    return chatRes.sort((a, b) => b.createDate.getTime() - a.createDate.getTime()).map(item => item.id);
+    return chatRes
+      .sort((a, b) => b.createDate.getTime() - a.createDate.getTime())
+      .map(item => ({
+        id: item.id,
+        title: item.title,
+      }));
   }
   /**
    * 获取用户的消息历史记录
