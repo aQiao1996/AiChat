@@ -317,8 +317,22 @@ export class ChatService {
     return { id: chatRes.id, title };
   }
   /**
+   * 根据请求头中的token获取用户信息，并查询该用户的所有聊天记录ID
+   * @param request 包含authorization头的请求对象
+   * @returns 按创建时间降序排列的聊天记录ID数组
+   */
+  async getChatIds(request: Request) {
+    const token = request.get("authorization");
+    const userInfo = getTokenUserInfo(token);
+    const chatRes = await this.chat.find({
+      where: { user: { id: userInfo.id } },
+      // select: ["id"],
+    });
+    return chatRes.sort((a, b) => b.createDate.getTime() - a.createDate.getTime()).map(item => item.id);
+  }
+  /**
    * 获取用户的消息历史记录
-   * 
+   *
    * @param request 请求对象，包含authorization头部和chatId查询参数
    * @returns 返回指定聊天ID的消息记录或用户的所有消息记录
    * @description 根据请求中的token验证用户身份，若提供chatId则返回该聊天的消息，否则返回用户所有聊天记录
