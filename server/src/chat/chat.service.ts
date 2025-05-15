@@ -316,4 +316,19 @@ export class ChatService {
 
     return { id: chatRes.id, title };
   }
+  getMessagesHistory(request: Request) {
+    const token = request.get("authorization");
+    const chatId = request.query.chatId;
+    const userInfo = getTokenUserInfo(token);
+    if (chatId) {
+      return this.chat.findOne({
+        where: { id: Number(chatId), user: { id: userInfo.id } },
+        relations: ["messages"],
+      });
+    }
+    return this.chat.find({
+      where: { user: { id: userInfo.id } },
+      relations: ["messages"],
+    });
+  }
 }

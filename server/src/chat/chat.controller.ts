@@ -34,9 +34,10 @@ export class ChatController {
   }
 
   @Get("/messagesHistory")
+  @ApiQuery({ name: "chatId", required: false, description: "消息id", type: Number })
   @ApiOperation({ summary: "获取消息历史", description: "获取消息历史" })
   @ApiBearerAuth()
-  async getMessagesHistory() {
-    return;
+  async getMessagesHistory(@Request() request) {
+    return this.chatService.getMessagesHistory(request);
   }
 }
