@@ -12,7 +12,7 @@ const initialState: IUserStore = {
 export const login = createAsyncThunk("user/login", async (params: ILoginParams, { rejectWithValue }) => {
   try {
     const result = await loginApi(params);
-    // return result;
+    return result;
   } catch (error) {
     return rejectWithValue({
       message: error instanceof Error ? error.message : "未知错误",

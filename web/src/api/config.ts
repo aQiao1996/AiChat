@@ -21,10 +21,10 @@ export interface FetchOptions<T = any> {
 /**
  * 响应数据类型
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<K = any> {
   code: number;
   message: string;
-  data: T;
+  data: K;
 }
 
 /**
@@ -61,8 +61,6 @@ const defaultOptions: FetchOptions = {
  */
 const checkStatus = async (response: Response): Promise<Response> => {
   if (response.ok) return response;
-  // 下面这行会导致 同一个 Response 对象的 body 流被多次读取​​, 然后报 Failed to execute 'json' on 'Response': body stream already read 错误
-  // const errRes = await response.json();
   const errRes = await response.clone().json();
   const error = new Error(errRes.message) as ApiError;
   error.response = errRes;
@@ -90,7 +88,7 @@ const createUrl = (url: string, params?: Record<string, any>): string => {
 /**
  * 类型守卫：检查是否为ApiResponse
  */
-function isApiResponse<T>(data: any): data is ApiResponse<T> {
+function isApiResponse<K>(data: any): data is ApiResponse<K> {
   return typeof data === "object" && data !== null && "code" in data && "message" in data && "data" in data;
 }
 
@@ -99,8 +97,8 @@ function isApiResponse<T>(data: any): data is ApiResponse<T> {
  */
 const requestInterceptor = async (
   url: string,
-  options: FetchOptions
-): Promise<{ url: string; options: FetchOptions }> => {
+  options: FetchOptions<any>
+): Promise<{ url: string; options: FetchOptions<any> }> => {
   // 添加认证token（仅当requiresToken为true时）
   const { requiresToken = true } = options;
   const token = localStorage.getItem("token");
@@ -125,7 +123,7 @@ const requestInterceptor = async (
 /**
  * 响应拦截器
  */
-const responseInterceptor = <T>(response: ApiResponse<T>): T => {
+const responseInterceptor = <K>(response: ApiResponse<K>): K => {
   if (response.code !== 200) {
     throw new Error(response.message || "Error");
   }
@@ -140,7 +138,6 @@ const errorHandler = (error: any): never => {
     if (error.response) {
       switch (error.response.code) {
         case 400:
-          // antdMessage.error 直接使用会报错
           antdMessage.open({ content: "请求错误", type: "error" });
           break;
         case 401:
@@ -178,7 +175,7 @@ const errorHandler = (error: any): never => {
 /**
  * 封装fetch请求
  */
-const fetchRequest = async <T = any>(url: string, options: FetchOptions<T> = {}): Promise<T> => {
+const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): Promise<K> => {
   const { method = "GET", headers, body, timeout = 10000 } = options;
 
   // 应用请求拦截器
@@ -216,10 +213,9 @@ const fetchRequest = async <T = any>(url: string, options: FetchOptions<T> = {})
     // 处理非JSON响应
     if (!response.headers.get("content-type")?.includes("application/json")) {
       const text = await response.text();
-      return text as unknown as T;
+      return text as unknown as K;
     }
 
-    // todo 会导致 Failed to execute 'json' on 'Response': body stream already read
     // 检查状态
     checkStatus(response);
 
@@ -227,8 +223,8 @@ const fetchRequest = async <T = any>(url: string, options: FetchOptions<T> = {})
     const responseData = await response.json();
 
     // 如果是ApiResponse格式，处理响应
-    if (isApiResponse<T>(responseData)) {
-      return responseInterceptor<T>(responseData);
+    if (isApiResponse<K>(responseData)) {
+      return responseInterceptor<K>(responseData);
     }
 
     return responseData;
@@ -242,58 +238,50 @@ const fetchRequest = async <T = any>(url: string, options: FetchOptions<T> = {})
 /**
  * 封装GET请求
  */
-export const get = <T = any>(
+export const get = <T, K>(
   url: string,
   params?: Record<string, any>,
   options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<T> => {
-  return fetchRequest<T>(url, { ...options, method: "GET", params });
+): Promise<K> => {
+  return fetchRequest<T, K>(url, { ...options, method: "GET", params });
 };
 
 /**
  * 封装POST请求
  */
-export const post = <T = any>(
-  url: string,
-  body?: T,
-  options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<T> => {
-  return fetchRequest<T>(url, { ...options, method: "POST", body });
+export const post = <T, K>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<K> => {
+  return fetchRequest<T, K>(url, { ...options, method: "POST", body });
 };
 
 /**
  * 封装PUT请求
  */
-export const put = <T = any>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<T> => {
-  return fetchRequest<T>(url, { ...options, method: "PUT", body });
+export const put = <T, K>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<K> => {
+  return fetchRequest<T, K>(url, { ...options, method: "PUT", body });
 };
 
 /**
  * 封装DELETE请求
  */
-export const del = <T = any>(
+export const del = <T, K>(
   url: string,
   params?: Record<string, any>,
   options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<T> => {
-  return fetchRequest<T>(url, { ...options, method: "DELETE", params });
+): Promise<K> => {
+  return fetchRequest<T, K>(url, { ...options, method: "DELETE", params });
 };
 
 /**
  * 封装PATCH请求
  */
-export const patch = <T = any>(
-  url: string,
-  body?: T,
-  options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<T> => {
-  return fetchRequest<T>(url, { ...options, method: "PATCH", body });
+export const patch = <T, K>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<K> => {
+  return fetchRequest<T, K>(url, { ...options, method: "PATCH", body });
 };
 
 /**
  * 带loading的请求封装
  */
-export const requestWithLoading = async <T = any>(
+export const requestWithLoading = async <T, K>(
   method: HttpMethod,
   url: string,
   data?: T,
@@ -304,15 +292,15 @@ export const requestWithLoading = async <T = any>(
   // const loading = message.loading('请求中...', 0);
   try {
     if (method === "GET") {
-      return await get<T>(url, params, options);
+      return await get<T, K>(url, params, options);
     } else if (method === "POST") {
-      return await post<T>(url, data, options);
+      return await post<T, K>(url, data, options);
     } else if (method === "PUT") {
-      return await put<T>(url, data, options);
+      return await put<T, K>(url, data, options);
     } else if (method === "DELETE") {
-      return await del<T>(url, params, options);
+      return await del<T, K>(url, params, options);
     } else if (method === "PATCH") {
-      return await patch<T>(url, data, options);
+      return await patch<T, K>(url, data, options);
     }
   } finally {
     // loading();

@@ -17,5 +17,5 @@ export interface ILoginResponse {
  * @returns 返回登录请求的Promise对象
  */
 export const loginApi = (body: ILoginParams) => {
-  return request.post<ILoginResponse>("/user/login", body);
+  return request.post<ILoginParams, ILoginResponse>("/user/login", body);
 };
