@@ -1,3 +1,5 @@
+import { message as antdMessage } from "antd";
+
 /**
  * 请求方法类型
  */
@@ -13,7 +15,7 @@ export interface FetchOptions<T = any> {
   body?: T;
   timeout?: number;
   credentials?: RequestCredentials; // 'omit' | 'same-origin' | 'include'
-  requiresToken?: boolean; 
+  requiresToken?: boolean;
 }
 
 /**
@@ -30,9 +32,11 @@ export interface ApiResponse<T = any> {
  */
 export interface ApiError extends Error {
   response?: {
-    status: number;
-    statusText: string;
-    data?: any;
+    code: number;
+    message: string;
+    method: HttpMethod;
+    path: string;
+    timestamp: string;
   };
 }
 
@@ -57,15 +61,12 @@ const defaultOptions: FetchOptions = {
  */
 const checkStatus = async (response: Response): Promise<Response> => {
   if (response.ok) return response;
-  return response.json().then((errRes: any) => {
-    const error = new Error(errRes.message || "Request failed") as ApiError;
-    error.response = {
-      status: response.status,
-      statusText: response.statusText,
-      data: errRes,
-    };
-    throw error;
-  });
+  // 下面这行会导致 同一个 Response 对象的 body 流被多次读取​​, 然后报 Failed to execute 'json' on 'Response': body stream already read 错误
+  // const errRes = await response.json();
+  const errRes = await response.clone().json();
+  const error = new Error(errRes.message) as ApiError;
+  error.response = errRes;
+  throw error;
 };
 
 /**
@@ -137,38 +138,39 @@ const responseInterceptor = <T>(response: ApiResponse<T>): T => {
 const errorHandler = (error: any): never => {
   if (isApiError(error)) {
     if (error.response) {
-      switch (error.response.status) {
+      switch (error.response.code) {
         case 400:
-          console.error("请求错误");
+          // antdMessage.error 直接使用会报错
+          antdMessage.open({ content: "请求错误", type: "error" });
           break;
         case 401:
-          console.error("未授权，请登录");
+          antdMessage.open({ content: "未授权，请登录", type: "error" });
           // 跳转登录页
           window.location.href = "/login";
           break;
         case 403:
-          console.error("拒绝访问");
+          antdMessage.open({ content: "拒绝访问", type: "error" });
           break;
         case 404:
-          console.error(`请求地址出错: ${error.response.data?.url || ""}`);
+          antdMessage.open({ content: `请求地址出错: ${error.response.path || ""}`, type: "error" });
           break;
         case 500:
-          console.error("服务器内部错误");
+          antdMessage.open({ content: "服务器内部错误", type: "error" });
           break;
         default:
-          console.error(`连接错误 ${error.response.status}`);
+          antdMessage.open({ content: `连接错误 ${error.response.code}`, type: "error" });
       }
     } else {
       if (error.message.includes("timeout")) {
-        console.error("请求超时");
+        antdMessage.open({ content: "请求超时", type: "error" });
       } else {
-        console.error("网络异常，请检查网络连接");
+        antdMessage.open({ content: "网络异常，请检查网络连接", type: "error" });
       }
     }
   } else if (error instanceof TypeError) {
-    console.error("网络异常:", error.message);
+    antdMessage.open({ content: `网络异常:${error.message}`, type: "error" });
   } else {
-    console.error("未知错误:", error);
+    antdMessage.open({ content: error, type: "error" });
   }
   throw error;
 };
@@ -180,7 +182,8 @@ const fetchRequest = async <T = any>(url: string, options: FetchOptions<T> = {})
   const { method = "GET", headers, body, timeout = 10000 } = options;
 
   // 应用请求拦截器
-  const { url: finalUrl, options: finalOptions } = await requestInterceptor(url, {
+  const requestUrl = import.meta.env.VITE_APP_BASE_URL + url; // 添加前缀
+  const { url: finalUrl, options: finalOptions } = await requestInterceptor(requestUrl, {
     ...defaultOptions,
     ...options,
     method: method.toUpperCase() as HttpMethod,
@@ -216,6 +219,7 @@ const fetchRequest = async <T = any>(url: string, options: FetchOptions<T> = {})
       return text as unknown as T;
     }
 
+    // todo 会导致 Failed to execute 'json' on 'Response': body stream already read
     // 检查状态
     checkStatus(response);
 
@@ -260,11 +264,7 @@ export const post = <T = any>(
 /**
  * 封装PUT请求
  */
-export const put = <T = any>(
-  url: string,
-  body?: T,
-  options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<T> => {
+export const put = <T = any>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<T> => {
   return fetchRequest<T>(url, { ...options, method: "PUT", body });
 };
 
@@ -327,6 +327,3 @@ export default {
   patch,
   requestWithLoading,
 };
-
-
-

@@ -1,12 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { loginApi, type ILoginParams } from "@/api/login";
 
 interface IUserStore {
   token: string;
-}
-
-export interface ILoginParams {
-  username: string;
-  password: string;
 }
 
 const initialState: IUserStore = {
@@ -14,20 +10,9 @@ const initialState: IUserStore = {
 };
 
 export const login = createAsyncThunk("user/login", async (params: ILoginParams, { rejectWithValue }) => {
-  const body = JSON.stringify(params);
   try {
-    const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/user/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    const result = await loginApi(params);
+    // return result;
   } catch (error) {
     return rejectWithValue({
       message: error instanceof Error ? error.message : "未知错误",

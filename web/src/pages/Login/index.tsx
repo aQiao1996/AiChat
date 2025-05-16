@@ -4,8 +4,9 @@ import { message, Tabs, theme, type TabsProps } from "antd";
 import { useState } from "react";
 import AvatarImage from "@/assets/images/avatar.png";
 import { useAppDispatch } from "@/store";
-import { login, setToken, type ILoginParams } from "@/store/modules/user";
+import { login, setToken } from "@/store/modules/user";
 import { useNavigate } from "react-router-dom";
+import type { ILoginParams } from "@/api/login";
 
 type LoginType = "account";
 
@@ -20,8 +21,8 @@ const Page = () => {
 
   const onFinish = async (values: ILoginParams) => {
     try {
-      const { data } = await dispatch(login(values)).unwrap();
-      dispatch(setToken("Bearer " + data.token));
+      const result = await dispatch(login(values)).unwrap();
+      dispatch(setToken("Bearer " + result.token));
       messageApi.success("登录成功");
       setTimeout(() => {
         navigate("/home");
