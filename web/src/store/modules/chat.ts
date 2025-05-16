@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createChatApi, type ICreateChatParams } from "@/api/chat";
 import type { IMessage, IModel } from "@/types/chat";
-import type { RootState } from "..";
+// import type { RootState } from "..";
 
 interface IChatStore {
   messages: IMessage[];
@@ -13,10 +14,7 @@ interface IChatStore {
   history: IHistory[];
   currentChatId: number;
 }
-interface IChatParams {
-  content: string;
-  chatId: number;
-}
+
 export interface IHistory {
   title: string;
   chatId: number;
@@ -26,6 +24,11 @@ export interface IHistory {
 interface IHistoryParams {
   type: "add" | "update" | "delete";
   data: IHistory;
+}
+
+interface IChatParams {
+  content: string;
+  chatId: number;
 }
 
 const initialState: IChatStore = {
@@ -48,41 +51,19 @@ const initialState: IChatStore = {
 export const createChat = createAsyncThunk(
   "chat/createChat",
   async (params: IChatParams, { rejectWithValue, getState }) => {
-    const body = JSON.stringify({
+    // const { user } = getState() as RootState;
+    // const token = user.token;
+    const body = {
       messages: { role: "user", content: params.content },
       chatId: params.chatId,
-    });
-    const { user } = getState() as RootState;
-    const token = user.token;
+    } as ICreateChatParams;
     try {
-      const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/chat/createChat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: token },
-        body,
-      });
-
-      // todo 懒得统一封装
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        if (response.status === 401) {
-          return rejectWithValue({
-            status: response.status,
-            message: errorData?.message || "token 过期，请重新登录",
-          });
-        }
-        return rejectWithValue({
-          status: response.status,
-          message: errorData?.message || `HTTP error! status: ${response.status}`,
-        });
-      }
-
-      return await response.json();
+      const result = await createChatApi(body);
+      return result;
     } catch (error) {
-      // 处理非 HTTP 错误（如网络错误、CORS、JSON.parse 错误等）
-      console.error("请求失败:", error);
       return rejectWithValue({
-        status: 0, // 表示非 HTTP 错误
         message: error instanceof Error ? error.message : "未知错误",
+        ...(error as any)?.response?.data,
       });
     }
   }

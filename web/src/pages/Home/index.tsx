@@ -52,12 +52,12 @@ const Home = () => {
   const sendMessage = async (message: string) => {
     dispatch(setLoading(true));
     try {
-      const { data } = await dispatch(createChat({ content: message, chatId: currentChatId })).unwrap();
-      const chatId = data.id;
+      const result = await dispatch(createChat({ content: message, chatId: currentChatId })).unwrap();
+      const chatId = result.id;
       if (!chatId) return;
       dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       dispatch(setCurrentChatId(chatId));
-      currentChatId === 0 && dispatch(setTitle(data.title));
+      currentChatId === 0 && dispatch(setTitle(result.title));
       const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
       // 如果有历史记录
       if (currentChatHistory) {
@@ -68,7 +68,7 @@ const Home = () => {
       } else {
         currentChatInfo.current = {
           chatId,
-          title: currentChatId === 0 ? data.title : title,
+          title: currentChatId === 0 ? result.title : title,
           messages: [{ role: "user", content: message }],
         };
       }
@@ -107,7 +107,7 @@ const Home = () => {
       `${import.meta.env.VITE_APP_BASE_URL}/chat/chatStream?chatId=${params.chatId}&model=${
         params.model || "deepseek-v3"
       }`,
-      { headers: { Authorization: token } }
+      { headers: { Authorization: "Bearer " + token } }
     );
     setEventSource(eventSource);
 

@@ -1,4 +1,5 @@
 import { message as antdMessage } from "antd";
+import store from "@/store";
 
 /**
  * 请求方法类型
@@ -101,7 +102,7 @@ const requestInterceptor = async (
 ): Promise<{ url: string; options: FetchOptions<any> }> => {
   // 添加认证token（仅当requiresToken为true时）
   const { requiresToken = true } = options;
-  const token = localStorage.getItem("token");
+  const token = store.getState().user.token;
   const newOptions = { ...options };
 
   if (requiresToken && token) {
@@ -203,7 +204,10 @@ const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): P
   try {
     const response = await fetch(finalUrl, {
       ...finalOptions,
-      headers: normalizedHeaders, // 使用规范化 headers
+      headers: {
+        ...normalizedHeaders,
+        ...finalOptions.headers,
+      }, // 使用规范化 headers
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });

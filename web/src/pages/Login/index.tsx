@@ -22,7 +22,7 @@ const Page = () => {
   const onFinish = async (values: ILoginParams) => {
     try {
       const result = await dispatch(login(values)).unwrap();
-      dispatch(setToken("Bearer " + result.token));
+      dispatch(setToken(result.token));
       messageApi.success("登录成功");
       setTimeout(() => {
         navigate("/home");

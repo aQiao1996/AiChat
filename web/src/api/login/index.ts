@@ -14,8 +14,9 @@ export interface ILoginResponse {
 /**
  * 用户登录接口
  * @param body 登录参数，包含用户名和密码等信息
- * @returns 返回登录请求的Promise对象
+ * @returns 返回登录结果，包含token等响应数据
+ * @requiresToken 不需要携带token
  */
 export const loginApi = (body: ILoginParams) => {
-  return request.post<ILoginParams, ILoginResponse>("/user/login", body);
+  return request.post<ILoginParams, ILoginResponse>("/user/login", body, { requiresToken: false });
 };
