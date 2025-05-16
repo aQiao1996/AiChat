@@ -191,12 +191,6 @@ const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): P
     },
   });
 
-  // 规范化 headers
-  const normalizedHeaders = {
-    ...defaultOptions.headers,
-    ...headers,
-  } satisfies Record<string, string>;
-
   // 设置超时
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -204,10 +198,7 @@ const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): P
   try {
     const response = await fetch(finalUrl, {
       ...finalOptions,
-      headers: {
-        ...normalizedHeaders,
-        ...finalOptions.headers,
-      }, // 使用规范化 headers
+      headers: finalOptions.headers,
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
