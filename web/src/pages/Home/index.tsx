@@ -116,11 +116,12 @@ const Home = () => {
     let reasoningStartTime = 0; // 思考开始时间（性能高精度计时）
     let reasoningTimeMs = 0; // 思考总耗时（毫秒）
 
+    // onopen
     eventSource.onopen = function (this: EventSource) {
       dispatch(setReasoningTime(0));
       console.log("🚀 ~ createChatStream ~ 流式数据开始----->");
     };
-
+    // onmessage
     eventSource.onmessage = function (this, event) {
       MyInputRef.current?.setSendBtnState("answering");
       const { type, content, role } = JSON.parse(event.data || "{}");
@@ -161,7 +162,7 @@ const Home = () => {
         dispatch(updateMessages({ type: "add", data: messageItem }));
       }
     };
-
+    // onerror
     eventSource.onerror = function (this: EventSource, event) {
       console.error("EventSource failed:", event);
       eventSource.close();

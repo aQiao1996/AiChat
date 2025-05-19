@@ -19,6 +19,12 @@ const Page = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  /**
+   * 处理登录表单提交
+   * @param values 登录表单参数
+   * @throws 当登录失败时抛出错误信息
+   * @description 执行登录操作，成功后设置token并跳转到首页，失败则显示错误信息
+   */
   const onFinish = async (values: ILoginParams) => {
     try {
       const result = await dispatch(login(values)).unwrap();
@@ -45,12 +51,14 @@ const Page = () => {
           initialValues={{ username: "panghu", password: "panghu666" }}
           onFinish={onFinish}
         >
+          {/*  */}
           <Tabs
             centered
             items={items}
             activeKey={loginType}
             onChange={activeKey => setLoginType(activeKey as LoginType)}
           ></Tabs>
+          {/*  */}
           {loginType === "account" && (
             <>
               <ProFormText

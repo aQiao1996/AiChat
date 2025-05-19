@@ -25,6 +25,7 @@ export const Prism = () => {
   const handlePrismClick: MenuProps["onClick"] = ({ key }) => {
     dispatch(setPrismTheme(key as TPrism));
   };
+  
   return (
     <Dropdown menu={{ items, selectable: true, defaultSelectedKeys: [prism], onClick: handlePrismClick }}>
       <a className="cursor-pointer text-18 !text-black hover:!text-[#1890ff]" onClick={e => e.preventDefault()}>
