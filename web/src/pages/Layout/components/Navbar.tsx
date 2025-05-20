@@ -2,23 +2,18 @@ import { Avatar, Divider, Dropdown, type MenuProps } from "antd";
 import { useAppSelector, useAppDispatch } from "@/store";
 import AvatarImage from "@/assets/images/avatar.png";
 import { MessageOutlined, MoreOutlined } from "@ant-design/icons";
-import { updateMessages, setLoading, setTitle, setCurrentChatId } from "@/store/modules/chat";
-import type { IHistory } from "@/store/modules/chat";
+import { updateMessages, setTitle, type IHistory } from "@/store/modules/chat";
+import { setCurrentChatId } from "@/store/modules/user";
 
 const items: MenuProps["items"] = [
-  {
-    key: "rename",
-    label: <span>重命名</span>,
-  },
-  {
-    key: "delete",
-    label: <span>删除</span>,
-  },
+  { key: "rename", label: <span>重命名</span> },
+  { key: "delete", label: <span>删除</span> },
 ];
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
-  const { history, currentChatId } = useAppSelector(state => state.chat);
+  const { history } = useAppSelector(state => state.chat);
+  const { currentChatId } = useAppSelector(state => state.user);
 
   /**
    * 处理新建聊天逻辑

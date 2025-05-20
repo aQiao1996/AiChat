@@ -3,10 +3,12 @@ import { loginApi, type ILoginParams } from "@/api/login";
 
 interface IUserStore {
   token: string;
+  currentChatId: number;
 }
 
 const initialState: IUserStore = {
   token: "",
+  currentChatId: 0, // 当前对话id,新对话是0
 };
 
 export const login = createAsyncThunk("user/login", async (params: ILoginParams, { rejectWithValue }) => {
@@ -28,8 +30,11 @@ const userStore = createSlice({
     setToken(state, { payload }: { payload: string }) {
       state.token = payload;
     },
+    setCurrentChatId(state, { payload }: { payload: number }) {
+      state.currentChatId = payload;
+    },
   },
 });
 
-export const { setToken } = userStore.actions;
+export const { setToken, setCurrentChatId } = userStore.actions;
 export default userStore.reducer;

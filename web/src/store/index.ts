@@ -10,8 +10,8 @@ import storage from "redux-persist/lib/storage"; // 默认使用 localStorage
 const persistConfig = {
   key: "panghu", // 存储的 key 名称
   storage, // 存储引擎（默认 localStorage）
-  // whitelist: ["user"], // 只持久化 user 模块（可选）
-  // blacklist: ["chat"], // 不持久化 chat 模块（可选）
+  whitelist: ["user"], // 只持久化 user 模块
+  // blacklist: ["chat"], // 不持久化 chat 模块
 };
 
 // * 合并所有 Reducer

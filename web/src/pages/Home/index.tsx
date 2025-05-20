@@ -12,11 +12,10 @@ import {
   setReasoningTime,
   setTitle,
   setHistory,
-  setCurrentChatId,
   type IHistory,
 } from "@/store/modules/chat";
 import { useNavigate } from "react-router-dom";
-import { setToken } from "@/store/modules/user";
+import { setToken, setCurrentChatId } from "@/store/modules/user";
 import type { IMessage, IModel } from "@/types/chat";
 
 interface IStreamParams {
@@ -34,8 +33,8 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { model, history, title, currentChatId } = useAppSelector(state => state.chat);
-  const { token } = useAppSelector(state => state.user);
+  const { model, history, title } = useAppSelector(state => state.chat);
+  const { token, currentChatId } = useAppSelector(state => state.user);
   const [eventSource, setEventSource] = useState<TEventSource>();
   const currentChatInfo = useRef<IHistory>(null);
 
