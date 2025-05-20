@@ -9,11 +9,11 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 /**
  * 请求配置
  */
-export interface FetchOptions<T = any> {
+export interface FetchOptions {
   method?: HttpMethod;
   headers?: Record<string, string>;
   params?: Record<string, any>;
-  body?: T;
+  body?: any;
   timeout?: number;
   credentials?: RequestCredentials; // 'omit' | 'same-origin' | 'include'
   requiresToken?: boolean;
@@ -22,10 +22,10 @@ export interface FetchOptions<T = any> {
 /**
  * 响应数据类型
  */
-export interface ApiResponse<K = any> {
+export interface ApiResponse<T = any> {
   code: number;
   message: string;
-  data: K;
+  data: T;
 }
 
 /**
@@ -89,7 +89,7 @@ const createUrl = (url: string, params?: Record<string, any>): string => {
 /**
  * 类型守卫：检查是否为ApiResponse
  */
-function isApiResponse<K>(data: any): data is ApiResponse<K> {
+function isApiResponse<T>(data: any): data is ApiResponse<T> {
   return typeof data === "object" && data !== null && "code" in data && "message" in data && "data" in data;
 }
 
@@ -98,8 +98,8 @@ function isApiResponse<K>(data: any): data is ApiResponse<K> {
  */
 const requestInterceptor = async (
   url: string,
-  options: FetchOptions<any>
-): Promise<{ url: string; options: FetchOptions<any> }> => {
+  options: FetchOptions
+): Promise<{ url: string; options: FetchOptions }> => {
   // 添加认证token（仅当requiresToken为true时）
   const { requiresToken = true } = options;
   const token = store.getState().user.token;
@@ -124,7 +124,7 @@ const requestInterceptor = async (
 /**
  * 响应拦截器
  */
-const responseInterceptor = <K>(response: ApiResponse<K>): K => {
+const responseInterceptor = <T>(response: ApiResponse<T>): T => {
   if (response.code !== 200) {
     throw new Error(response.message || "Error");
   }
@@ -176,7 +176,7 @@ const errorHandler = (error: any): never => {
 /**
  * 封装fetch请求
  */
-const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): Promise<K> => {
+const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise<T> => {
   const { method = "GET", headers, body, timeout = 10000 } = options;
 
   // 应用请求拦截器
@@ -208,7 +208,7 @@ const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): P
     // 处理非JSON响应
     if (!response.headers.get("content-type")?.includes("application/json")) {
       const text = await response.text();
-      return text as unknown as K;
+      return text as unknown as T;
     }
 
     // 检查状态
@@ -218,8 +218,8 @@ const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): P
     const responseData = await response.json();
 
     // 如果是ApiResponse格式，处理响应
-    if (isApiResponse<K>(responseData)) {
-      return responseInterceptor<K>(responseData);
+    if (isApiResponse<T>(responseData)) {
+      return responseInterceptor<T>(responseData);
     }
 
     return responseData;
@@ -233,69 +233,69 @@ const fetchRequest = async <T, K>(url: string, options: FetchOptions<T> = {}): P
 /**
  * 封装GET请求
  */
-export const get = <T, K>(
+export const get = <T>(
   url: string,
   params?: Record<string, any>,
-  options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<K> => {
-  return fetchRequest<T, K>(url, { ...options, method: "GET", params });
+  options?: Omit<FetchOptions, "method" | "body">
+): Promise<T> => {
+  return fetchRequest<T>(url, { ...options, method: "GET", params });
 };
 
 /**
  * 封装POST请求
  */
-export const post = <T, K>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<K> => {
-  return fetchRequest<T, K>(url, { ...options, method: "POST", body });
+export const post = <T>(url: string, body?: any, options?: Omit<FetchOptions, "method" | "body">): Promise<T> => {
+  return fetchRequest<T>(url, { ...options, method: "POST", body });
 };
 
 /**
  * 封装PUT请求
  */
-export const put = <T, K>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<K> => {
-  return fetchRequest<T, K>(url, { ...options, method: "PUT", body });
+export const put = <T>(url: string, body?: any, options?: Omit<FetchOptions, "method" | "body">): Promise<T> => {
+  return fetchRequest<T>(url, { ...options, method: "PUT", body });
 };
 
 /**
  * 封装DELETE请求
  */
-export const del = <T, K>(
+export const del = <T>(
   url: string,
   params?: Record<string, any>,
-  options?: Omit<FetchOptions<T>, "method" | "body">
-): Promise<K> => {
-  return fetchRequest<T, K>(url, { ...options, method: "DELETE", params });
+  options?: Omit<FetchOptions, "method" | "body">
+): Promise<T> => {
+  return fetchRequest<T>(url, { ...options, method: "DELETE", params });
 };
 
 /**
  * 封装PATCH请求
  */
-export const patch = <T, K>(url: string, body?: T, options?: Omit<FetchOptions<T>, "method" | "body">): Promise<K> => {
-  return fetchRequest<T, K>(url, { ...options, method: "PATCH", body });
+export const patch = <T>(url: string, body?: any, options?: Omit<FetchOptions, "method" | "body">): Promise<T> => {
+  return fetchRequest<T>(url, { ...options, method: "PATCH", body });
 };
 
 /**
  * 带loading的请求封装
  */
-export const requestWithLoading = async <T, K>(
+export const requestWithLoading = async <T>(
   method: HttpMethod,
   url: string,
-  data?: T,
+  data?: any,
   params?: Record<string, any>,
-  options?: Omit<FetchOptions<T>, "method" | "body" | "params">
+  options?: Omit<FetchOptions, "method" | "body" | "params">
 ) => {
   // 这里可以添加loading逻辑
   // const loading = message.loading('请求中...', 0);
   try {
     if (method === "GET") {
-      return await get<T, K>(url, params, options);
+      return await get<T>(url, params, options);
     } else if (method === "POST") {
-      return await post<T, K>(url, data, options);
+      return await post<T>(url, data, options);
     } else if (method === "PUT") {
-      return await put<T, K>(url, data, options);
+      return await put<T>(url, data, options);
     } else if (method === "DELETE") {
-      return await del<T, K>(url, params, options);
+      return await del<T>(url, params, options);
     } else if (method === "PATCH") {
-      return await patch<T, K>(url, data, options);
+      return await patch<T>(url, data, options);
     }
   } finally {
     // loading();

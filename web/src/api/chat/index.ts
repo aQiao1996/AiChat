@@ -25,7 +25,7 @@ interface IMessagesHistoryResponse extends ICreateChatResponse {
  * @returns 返回创建的聊天会话结果
  */
 export const createChatApi = (body: ICreateChatParams) => {
-  return request.post<ICreateChatParams, ICreateChatResponse>("/chat/createChat", body);
+  return request.post<ICreateChatResponse>("/chat/createChat", body);
 };
 
 /**
@@ -33,7 +33,7 @@ export const createChatApi = (body: ICreateChatParams) => {
  * @returns 包含用户聊天信息的响应数组
  */
 export const getUserChatInfosApi = () => {
-  return request.get<null, ICreateChatResponse[]>("/chat/userChatInfos");
+  return request.get<ICreateChatResponse[]>("/chat/userChatInfos");
 };
 
 /**
@@ -42,5 +42,5 @@ export const getUserChatInfosApi = () => {
  * @returns 包含消息历史记录的Promise对象
  */
 export const getMessagesHistoryApi = (id: number) => {
-  return request.get<number, IMessagesHistoryResponse>(`/chat/messagesHistory?chatId=${id}`);
+  return request.get<IMessagesHistoryResponse>(`/chat/messagesHistory?chatId=${id}`);
 };

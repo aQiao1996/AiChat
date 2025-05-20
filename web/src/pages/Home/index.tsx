@@ -160,6 +160,7 @@ const Home = () => {
           messageItem.reasoningTime = (reasoningTimeMs / 1000).toFixed(2);
         }
         dispatch(updateMessages({ type: "add", data: messageItem }));
+        console.log("🚀 ~ createChatStream ~ 流式数据结束----->");
       }
     };
     // onerror

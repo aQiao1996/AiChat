@@ -18,5 +18,5 @@ export interface ILoginResponse {
  * @requiresToken 不需要携带token
  */
 export const loginApi = (body: ILoginParams) => {
-  return request.post<ILoginParams, ILoginResponse>("/user/login", body, { requiresToken: false });
+  return request.post<ILoginResponse>("/user/login", body, { requiresToken: false });
 };
