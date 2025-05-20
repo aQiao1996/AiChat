@@ -27,11 +27,11 @@ const Page = () => {
    */
   const onFinish = async (values: ILoginParams) => {
     try {
-      const result = await dispatch(login(values)).unwrap();
-      dispatch(setToken(result.token));
+      const { data } = await dispatch(login(values)).unwrap();
+      dispatch(setToken(data.token));
       messageApi.success("登录成功");
       setTimeout(() => {
-        navigate("/home");
+        // navigate("/home");
       }, 1000);
     } catch (error: any) {
       messageApi.error(error.message || "未知错误");

@@ -124,11 +124,18 @@ const requestInterceptor = async (
 /**
  * 响应拦截器
  */
-const responseInterceptor = <T>(response: ApiResponse<T>): T => {
+// const responseInterceptor = <T>(response: ApiResponse<T>): T => {
+//   if (response.code !== 200) {
+//     throw new Error(response.message || "Error");
+//   }
+//   return response.data;
+// };
+// 还是不做处理,全部返回
+const responseInterceptor = <T>(response: ApiResponse<T>) => {
   if (response.code !== 200) {
     throw new Error(response.message || "Error");
   }
-  return response.data;
+  return response;
 };
 
 /**
@@ -176,7 +183,7 @@ const errorHandler = (error: any): never => {
 /**
  * 封装fetch请求
  */
-const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise<T> => {
+const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise<ApiResponse<T>> => {
   const { method = "GET", headers, body, timeout = 10000 } = options;
 
   // 应用请求拦截器
@@ -208,7 +215,7 @@ const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise
     // 处理非JSON响应
     if (!response.headers.get("content-type")?.includes("application/json")) {
       const text = await response.text();
-      return text as unknown as T;
+      return text as unknown as ApiResponse<T>;
     }
 
     // 检查状态
@@ -237,21 +244,29 @@ export const get = <T>(
   url: string,
   params?: Record<string, any>,
   options?: Omit<FetchOptions, "method" | "body">
-): Promise<T> => {
+): Promise<ApiResponse<T>> => {
   return fetchRequest<T>(url, { ...options, method: "GET", params });
 };
 
 /**
  * 封装POST请求
  */
-export const post = <T>(url: string, body?: any, options?: Omit<FetchOptions, "method" | "body">): Promise<T> => {
+export const post = <T>(
+  url: string,
+  body?: any,
+  options?: Omit<FetchOptions, "method" | "body">
+): Promise<ApiResponse<T>> => {
   return fetchRequest<T>(url, { ...options, method: "POST", body });
 };
 
 /**
  * 封装PUT请求
  */
-export const put = <T>(url: string, body?: any, options?: Omit<FetchOptions, "method" | "body">): Promise<T> => {
+export const put = <T>(
+  url: string,
+  body?: any,
+  options?: Omit<FetchOptions, "method" | "body">
+): Promise<ApiResponse<T>> => {
   return fetchRequest<T>(url, { ...options, method: "PUT", body });
 };
 
@@ -262,14 +277,18 @@ export const del = <T>(
   url: string,
   params?: Record<string, any>,
   options?: Omit<FetchOptions, "method" | "body">
-): Promise<T> => {
+): Promise<ApiResponse<T>> => {
   return fetchRequest<T>(url, { ...options, method: "DELETE", params });
 };
 
 /**
  * 封装PATCH请求
  */
-export const patch = <T>(url: string, body?: any, options?: Omit<FetchOptions, "method" | "body">): Promise<T> => {
+export const patch = <T>(
+  url: string,
+  body?: any,
+  options?: Omit<FetchOptions, "method" | "body">
+): Promise<ApiResponse<T>> => {
   return fetchRequest<T>(url, { ...options, method: "PATCH", body });
 };
 
