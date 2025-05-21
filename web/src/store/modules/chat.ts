@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createChatApi, type ICreateChatParams } from "@/api/chat";
+import { createChatApi, getUserChatInfosApi, type ICreateChatParams } from "@/api/chat";
 import type { IMessage, IModel } from "@/types/chat";
 // import type { RootState } from "..";
 
@@ -46,6 +46,7 @@ const initialState: IChatStore = {
   history: [], // 历史记录
 };
 
+// 创建聊天会话
 export const createChat = createAsyncThunk(
   "chat/createChat",
   async (params: IChatParams, { rejectWithValue, getState }) => {
@@ -66,6 +67,19 @@ export const createChat = createAsyncThunk(
     }
   }
 );
+
+// 获取用户所有聊天信息
+export const getUserChatInfos = createAsyncThunk("chat/userChatInfos", async (_, { rejectWithValue }) => {
+  try {
+    const result = await getUserChatInfosApi();
+    return result;
+  } catch (error) {
+    return rejectWithValue({
+      message: error instanceof Error ? error.message : "未知错误",
+      ...(error as any)?.response?.data,
+    });
+  }
+});
 
 const chatStore = createSlice({
   name: "chat",
