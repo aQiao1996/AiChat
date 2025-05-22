@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createChatApi, getUserChatInfosApi, type ICreateChatParams } from "@/api/chat";
+import { createChatApi, getUserChatInfosApi, getMessagesHistoryApi, type ICreateChatParams } from "@/api/chat";
 import type { IMessage, IModel } from "@/types/chat";
 // import type { RootState } from "..";
 
@@ -81,6 +81,19 @@ export const getUserChatInfos = createAsyncThunk("chat/userChatInfos", async (_,
   }
 });
 
+// 获取对应消息id的聊天记录
+export const getMessagesHistory = createAsyncThunk("chat/userChatInfos", async (id: number, { rejectWithValue }) => {
+  try {
+    const result = await getMessagesHistoryApi(id);
+    return result;
+  } catch (error) {
+    return rejectWithValue({
+      message: error instanceof Error ? error.message : "未知错误",
+      ...(error as any)?.response?.data,
+    });
+  }
+});
+
 const chatStore = createSlice({
   name: "chat",
   // * 初始状态数据
@@ -88,6 +101,7 @@ const chatStore = createSlice({
   // * 修改数据的同步方法
   reducers: {
     updateMessages(state, { payload }: { payload: { type: "add" | "update"; data: IMessage | IMessage[] } }) {
+      console.log("🚀 ~ updateMessages ~ payload:", payload);
       if (payload.type === "add") {
         state.messages.push(payload.data as IMessage);
         return;

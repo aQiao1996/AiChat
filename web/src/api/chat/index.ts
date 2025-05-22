@@ -9,7 +9,7 @@ export interface ICreateChatParams {
   };
 }
 
-interface ICreateChatResponse {
+export interface ICreateChatResponse {
   id: number;
   title: string;
 }

@@ -343,19 +343,45 @@ export class ChatService {
    * @returns 返回指定聊天ID的消息记录或用户的所有消息记录
    * @description 根据请求中的token验证用户身份，若提供chatId则返回该聊天的消息，否则返回用户所有聊天记录
    */
-  getMessagesHistory(request: Request) {
+  async getMessagesHistory(request: Request) {
     const token = request.get("authorization");
     const chatId = request.query.chatId;
     const userInfo = getTokenUserInfo(token);
     if (chatId) {
-      return this.chat.findOne({
+      const chatRes = await this.chat.findOne({
         where: { id: Number(chatId), user: { id: userInfo.id } },
         relations: ["messages"],
       });
+      const { id, createDate } = chatRes;
+      const messages = this.handleMessageContent(chatRes);
+      return {
+        id,
+        createDate,
+        messages,
+      };
     }
-    return this.chat.find({
+    const chatResList = await this.chat.find({
       where: { user: { id: userInfo.id } },
       relations: ["messages"],
     });
+    const messagesList = chatResList.map(item => ({
+      id: item.id,
+      createDate: item.createDate,
+      messages: this.handleMessageContent(item),
+    }));
+    return messagesList;
+  }
+
+  handleMessageContent(chat: Chat) {
+    let list = [];
+    for (let index = 0; index < chat.messages.length; index++) {
+      const item = chat.messages[index];
+      list.push({
+        role: item.role,
+        content: item.content.messages.content,
+        timestamp: item.timestamp,
+      });
+    }
+    return list;
   }
 }
