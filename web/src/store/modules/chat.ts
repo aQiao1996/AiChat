@@ -17,18 +17,6 @@ interface IChatStore {
   isLoading: boolean;
   reasoningTime?: number | string;
   title: string;
-  history: IHistory[];
-}
-
-export interface IHistory {
-  title: string;
-  chatId: number;
-  messages: IMessage[];
-}
-
-interface IHistoryParams {
-  type: "add" | "update" | "delete";
-  data: IHistory;
 }
 
 interface IChatParams {
@@ -49,7 +37,6 @@ const initialState: IChatStore = {
   isLoading: false,
   reasoningTime: undefined, // 思考用时
   title: "新对话", // 标题
-  history: [], // 历史记录
 };
 
 // 创建聊天会话
@@ -165,20 +152,10 @@ const chatStore = createSlice({
     setTitle(state, { payload }: { payload: string }) {
       state.title = payload;
     },
-    setHistory(state, { payload }: { payload: IHistoryParams }) {
-      if (payload.type === "add") {
-        state.history.push(payload.data);
-      } else if (payload.type === "update") {
-        const index = state.history.findIndex(item => item.chatId === payload.data.chatId);
-        if (index !== -1) {
-          state.history[index] = payload.data;
-        }
-      }
-    },
   },
 });
 // * 解构并导出 actions 对象的函数
-export const { updateMessages, updateModel, updateCurrentMessage, setLoading, setReasoningTime, setTitle, setHistory } =
+export const { updateMessages, updateModel, updateCurrentMessage, setLoading, setReasoningTime, setTitle } =
   chatStore.actions;
 // * 默认导出 reducer 函数
 export default chatStore.reducer;

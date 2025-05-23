@@ -97,7 +97,7 @@ const Navbar = () => {
 
   useEffect(() => {
     getUserChatData();
-  }, []);
+  }, [currentChatId]);
 
   return (
     <>

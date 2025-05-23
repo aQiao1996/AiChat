@@ -11,8 +11,6 @@ import {
   setLoading,
   setReasoningTime,
   setTitle,
-  setHistory,
-  type IHistory,
 } from "@/store/modules/chat";
 import { useNavigate } from "react-router-dom";
 import { setToken, setCurrentChatId } from "@/store/modules/user";
@@ -33,10 +31,9 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { model, history, title } = useAppSelector(state => state.chat);
+  const { model } = useAppSelector(state => state.chat);
   const { token, currentChatId } = useAppSelector(state => state.user);
   const [eventSource, setEventSource] = useState<TEventSource>();
-  const currentChatInfo = useRef<IHistory>(null);
 
   /**
    * 发送消息并处理响应
@@ -57,20 +54,6 @@ const Home = () => {
       dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
       dispatch(setCurrentChatId(chatId));
       currentChatId === 0 && dispatch(setTitle(data.title));
-      const currentChatHistory = history.find(item => item.chatId === currentChatInfo.current?.chatId);
-      // 如果有历史记录
-      if (currentChatHistory) {
-        const updatedHistoryItem = Object.assign({}, currentChatHistory, {
-          messages: [...currentChatHistory.messages, { role: "user", content: message }],
-        });
-        currentChatInfo.current = updatedHistoryItem;
-      } else {
-        currentChatInfo.current = {
-          chatId,
-          title: currentChatId === 0 ? data.title : title,
-          messages: [{ role: "user", content: message }],
-        };
-      }
       // 创建消息流式响应
       createChatStream({ chatId, model });
     } catch (error: any) {
@@ -147,10 +130,6 @@ const Home = () => {
         eventSource.close();
         dispatch(setLoading(false));
         dispatch(updateCurrentMessage(null));
-        const updatedHistoryItem = Object.assign({}, currentChatInfo.current, {
-          messages: [...(currentChatInfo.current?.messages ?? []), { role, content: answerResult }],
-        });
-        dispatch(setHistory({ type: "update", data: updatedHistoryItem }));
         MyInputRef.current?.setSendBtnState("default");
         // 如果有思考答案
         const messageItem: IMessage = { content: answerResult, role };
