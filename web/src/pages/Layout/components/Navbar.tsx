@@ -10,6 +10,7 @@ import type { ICreateChatResponse } from "@/api/chat";
 const Navbar = () => {
   const dispatch = useAppDispatch();
   const { currentChatId } = useAppSelector(state => state.user);
+  console.log("🚀 ~ Navbar ~ currentChatId:", currentChatId);
   const [chatsHistory, setChatsHistory] = useState<ICreateChatResponse[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -64,13 +65,13 @@ const Navbar = () => {
 
   /**
    * 处理菜单项点击事件
-   * @param param0 点击的菜单项key
-   * @param id 当前聊天会话ID
-   * @description
+   * @param param0 点击的菜单项key值
+   * @param id 当前聊天记录的ID
+   * @description 
    * - 当key为"rename"时执行重命名操作(待实现)
-   * - 当key为"delete"时删除指定ID的聊天会话
-   *   - 如果删除的是当前会话，则创建新会话
-   *   - 删除成功后显示提示并刷新聊天数据
+   * - 当key为"delete"时删除指定聊天记录
+   *   - 如果删除的是当前聊天，则创建新聊天
+   *   - 更新聊天历史状态
    */
   const handleMenuClick = async ({ key }: { key: string }, id: number) => {
     if (key === "rename") {
@@ -79,7 +80,7 @@ const Navbar = () => {
       await dispatch(deleteChat(id)).unwrap();
       if (id === currentChatId) handleNewChat();
       messageApi.success("删除成功");
-      getUserChatData();
+      setChatsHistory(prevChats => prevChats.filter(chat => chat.id !== id));
     }
   };
 
