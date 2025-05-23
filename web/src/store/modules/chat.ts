@@ -1,5 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createChatApi, getUserChatInfosApi, getMessagesHistoryApi, type ICreateChatParams } from "@/api/chat";
+import {
+  createChatApi,
+  getUserChatInfosApi,
+  getMessagesHistoryApi,
+  type ICreateChatParams,
+  deleteChatApi,
+} from "@/api/chat";
 import type { IMessage, IModel } from "@/types/chat";
 // import type { RootState } from "..";
 
@@ -85,6 +91,19 @@ export const getUserChatInfos = createAsyncThunk("chat/userChatInfos", async (_,
 export const getMessagesHistory = createAsyncThunk("chat/userChatInfos", async (id: number, { rejectWithValue }) => {
   try {
     const result = await getMessagesHistoryApi(id);
+    return result;
+  } catch (error) {
+    return rejectWithValue({
+      message: error instanceof Error ? error.message : "未知错误",
+      ...(error as any)?.response?.data,
+    });
+  }
+});
+
+// 删除消息
+export const deleteChat = createAsyncThunk("chat/deleteChat", async (id: number, { rejectWithValue }) => {
+  try {
+    const result = await deleteChatApi(id);
     return result;
   } catch (error) {
     return rejectWithValue({

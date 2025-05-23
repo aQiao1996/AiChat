@@ -44,3 +44,7 @@ export const getUserChatInfosApi = () => {
 export const getMessagesHistoryApi = (id: number) => {
   return request.get<IMessagesHistoryResponse>(`/chat/messagesHistory?chatId=${id}`);
 };
+
+export const deleteChatApi = (id: number) => {
+  return request.delete<string>(`/chat/deleteChat?chatId=${id}`);
+};

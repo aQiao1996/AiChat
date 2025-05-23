@@ -1,26 +1,39 @@
 import { useEffect, useState } from "react";
-import { Avatar, Divider, Dropdown, type MenuProps } from "antd";
+import { Avatar, Divider, Dropdown, message, type MenuProps } from "antd";
 import { useAppSelector, useAppDispatch } from "@/store";
 import AvatarImage from "@/assets/images/avatar.png";
 import { MessageOutlined, MoreOutlined } from "@ant-design/icons";
-import { updateMessages, setTitle, getUserChatInfos, getMessagesHistory, type IHistory } from "@/store/modules/chat";
+import { updateMessages, setTitle, getUserChatInfos, getMessagesHistory, deleteChat } from "@/store/modules/chat";
 import { setCurrentChatId } from "@/store/modules/user";
 import type { ICreateChatResponse } from "@/api/chat";
 
-const items: MenuProps["items"] = [
-  { key: "rename", label: <span>重命名</span> },
-  { key: "delete", label: <span>删除</span> },
-];
-
 const Navbar = () => {
   const dispatch = useAppDispatch();
-  // const { history } = useAppSelector(state => state.chat);
   const { currentChatId } = useAppSelector(state => state.user);
   const [chatsHistory, setChatsHistory] = useState<ICreateChatResponse[]>([]);
+  const [messageApi, contextHolder] = message.useMessage();
 
+  const items: MenuProps["items"] = [
+    { key: "rename", label: <span>重命名</span> },
+    { key: "delete", label: <span>删除</span> },
+  ];
+
+  /**
+   * 获取用户聊天数据
+   * 1. 调用dispatch获取用户聊天信息
+   * 2. 将获取的数据设置到chatsHistory状态
+   * 3. 根据当前聊天ID获取对应消息
+   */
   const getUserChatData = async () => {
     const { data } = await dispatch(getUserChatInfos()).unwrap();
     setChatsHistory(data);
+    const { id } = data.find(item => item.id === currentChatId) || {};
+    if (!id) return;
+    getCurrentChatMessages(id);
+  };
+
+  /**
+   * 获取指定聊天ID的历史消息
     getCurrentChatMessages(currentChatId);
   };
 
@@ -49,8 +62,36 @@ const Navbar = () => {
     getCurrentChatMessages(item.id);
   };
 
+  /**
+   * 处理菜单项点击事件
+   * @param param0 点击的菜单项key
+   * @param id 当前聊天会话ID
+   * @description
+   * - 当key为"rename"时执行重命名操作(待实现)
+   * - 当key为"delete"时删除指定ID的聊天会话
+   *   - 如果删除的是当前会话，则创建新会话
+   *   - 删除成功后显示提示并刷新聊天数据
+   */
+  const handleMenuClick = async ({ key }: { key: string }, id: number) => {
+    if (key === "rename") {
+      // TODO: 重命名
+    } else if (key === "delete") {
+      await dispatch(deleteChat(id)).unwrap();
+      if (id === currentChatId) handleNewChat();
+      messageApi.success("删除成功");
+      getUserChatData();
+    }
+  };
+
+  /**
+   * 获取指定聊天ID的历史消息
+   * @param id 聊天ID，为0时不执行操作
+   * @returns Promise<void> 异步获取并更新消息到store
+   */
   const getCurrentChatMessages = async (id: number) => {
+    if (id === 0) return;
     const { data } = await dispatch(getMessagesHistory(id)).unwrap();
+    if (!data) return;
     dispatch(updateMessages({ type: "update", data: data.messages }));
   };
 
@@ -59,41 +100,44 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="p-24">
-      {/*  */}
-      <div className="h-100">
-        <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
-          胖虎
-        </Avatar>
-        <span className="ml-8 font-bold text-18">胖虎</span>
+    <>
+      {contextHolder}
+      <div className="p-24">
+        {/*  */}
+        <div className="h-100">
+          <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
+            胖虎
+          </Avatar>
+          <span className="ml-8 font-bold text-18">胖虎</span>
+        </div>
+        <Divider />
+        {/*  */}
+        <div
+          className="h-40 text-16 border-1 border-[#666] rounded-8 flex items-center justify-center cursor-pointer hover:border-[#4096ff] hover:text-[#4096ff]"
+          onClick={handleNewChat}
+        >
+          新对话
+          <MessageOutlined className="ml-8" />
+        </div>
+        <Divider />
+        {/*  */}
+        <div>
+          {chatsHistory.map(item => (
+            <Dropdown menu={{ items, onClick: event => handleMenuClick(event, item.id) }} key={item.id}>
+              <div
+                className={`!text-[#333] flex cursor-pointer px-4 py-8 rounded-8 mb-8 hover:bg-[#eeeeee80] ${
+                  currentChatId === item.id ? "bg-[#eeeeee80]" : ""
+                }`}
+                onClick={() => handleItemClick(item)}
+              >
+                <span className="text-16 mr-8 flex-1">{item.title}</span>
+                <MoreOutlined />
+              </div>
+            </Dropdown>
+          ))}
+        </div>
       </div>
-      <Divider />
-      {/*  */}
-      <div
-        className="h-40 text-16 border-1 border-[#666] rounded-8 flex items-center justify-center cursor-pointer hover:border-[#4096ff] hover:text-[#4096ff]"
-        onClick={handleNewChat}
-      >
-        新对话
-        <MessageOutlined className="ml-8" />
-      </div>
-      <Divider />
-      {/*  */}
-      <div>
-        {chatsHistory.map(item => (
-          <Dropdown menu={{ items }} key={item.id}>
-            <div
-              className={`!text-[#333] flex cursor-pointer px-4 py-8 rounded-8 mb-8 hover:bg-[#eeeeee80] ${
-                currentChatId === item.id ? "bg-[#eeeeee80]" : ""
-              }`}
-              onClick={() => handleItemClick(item)}
-            >
-              <span className="text-16 mr-8 flex-1">{item.title}</span>
-              <MoreOutlined />
-            </div>
-          </Dropdown>
-        ))}
-      </div>
-    </div>
+    </>
   );
 };
 
