@@ -65,6 +65,7 @@ const Navbar = () => {
         <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
           胖虎
         </Avatar>
+        <span className="ml-8 font-bold text-18">胖虎</span>
       </div>
       <Divider />
       {/*  */}
