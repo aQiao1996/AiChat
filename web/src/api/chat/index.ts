@@ -32,8 +32,8 @@ export const createChatApi = (body: ICreateChatParams) => {
  * 获取用户所有聊天信息
  * @returns 包含用户聊天信息的响应数组
  */
-export const getUserChatInfosApi = () => {
-  return request.get<ICreateChatResponse[]>("/chat/userChatInfos");
+export const getUserChatMenuApi = () => {
+  return request.get<ICreateChatResponse[]>("/chat/userChatMenu");
 };
 
 /**

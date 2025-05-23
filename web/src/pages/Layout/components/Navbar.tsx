@@ -3,7 +3,7 @@ import { Avatar, Divider, Dropdown, message, type MenuProps } from "antd";
 import { useAppSelector, useAppDispatch } from "@/store";
 import AvatarImage from "@/assets/images/avatar.png";
 import { MessageOutlined, MoreOutlined } from "@ant-design/icons";
-import { updateMessages, setTitle, getUserChatInfos, getMessagesHistory, deleteChat } from "@/store/modules/chat";
+import { updateMessages, setTitle, getUserChatMenu, getMessagesHistory, deleteChat } from "@/store/modules/chat";
 import { setCurrentChatId } from "@/store/modules/user";
 import type { ICreateChatResponse } from "@/api/chat";
 
@@ -25,7 +25,7 @@ const Navbar = () => {
    * 3. 根据当前聊天ID获取对应消息
    */
   const getUserChatData = async () => {
-    const { data } = await dispatch(getUserChatInfos()).unwrap();
+    const { data } = await dispatch(getUserChatMenu()).unwrap();
     setChatsHistory(data);
     const { id } = data.find(item => item.id === currentChatId) || {};
     if (!id) return;

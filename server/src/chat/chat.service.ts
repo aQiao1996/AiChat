@@ -322,7 +322,7 @@ export class ChatService {
    * @param request HTTP请求对象，需包含Authorization头
    * @returns 返回按创建时间降序排列的聊天会话数组，包含id和title字段
    */
-  async getUserChatInfos(request: Request) {
+  async getUserChatMenu(request: Request) {
     const token = request.get("authorization");
     const userInfo = getTokenUserInfo(token);
     const chatRes = await this.chat.find({
@@ -393,10 +393,9 @@ export class ChatService {
   /**
    * 删除指定聊天记录
    * 
-   * @param request 请求对象，包含authorization头信息和chatId查询参数
-   * @returns 成功返回"success"字符串
-   * @throws HttpException 当聊天记录不存在或用户无权访问时抛出400错误
-   * @throws HttpException 当删除操作未影响任何记录时抛出400错误
+   * @param request 请求对象，包含授权token和查询参数chatId
+   * @throws HttpException 当聊天记录不存在或用户无权访问时抛出异常
+   * @returns 删除成功返回null，失败抛出异常
    */
   async deleteChat(request: Request) {
     const token = request.get("authorization");
@@ -412,6 +411,6 @@ export class ChatService {
     if (result.affected === 0) {
       throw new HttpException(`chatId：${chatId} 不存在`, HttpStatus.BAD_REQUEST);
     }
-    return "success";
+    return null;
   }
 }

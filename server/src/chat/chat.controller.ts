@@ -33,11 +33,11 @@ export class ChatController {
     return this.chatService.createChatStream(chatId, model);
   }
 
-  @Get("/userChatInfos")
+  @Get("/userChatMenu")
   @ApiOperation({ summary: "获取所有消息信息", description: "获取所有消息信息" })
   @ApiBearerAuth()
-  async getUserChatInfos(@Request() request) {
-    return this.chatService.getUserChatInfos(request);
+  async getUserChatMenu(@Request() request) {
+    return this.chatService.getUserChatMenu(request);
   }
 
   @Get("/messagesHistory")

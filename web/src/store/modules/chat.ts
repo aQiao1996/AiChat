@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   createChatApi,
-  getUserChatInfosApi,
+  getUserChatMenuApi,
   getMessagesHistoryApi,
   type ICreateChatParams,
   deleteChatApi,
@@ -62,9 +62,9 @@ export const createChat = createAsyncThunk(
 );
 
 // 获取用户所有聊天信息
-export const getUserChatInfos = createAsyncThunk("chat/userChatInfos", async (_, { rejectWithValue }) => {
+export const getUserChatMenu = createAsyncThunk("chat/userChatMenu", async (_, { rejectWithValue }) => {
   try {
-    const result = await getUserChatInfosApi();
+    const result = await getUserChatMenuApi();
     return result;
   } catch (error) {
     return rejectWithValue({
