@@ -390,6 +390,14 @@ export class ChatService {
     return list;
   }
 
+  /**
+   * 删除指定聊天记录
+   * 
+   * @param request 请求对象，包含authorization头信息和chatId查询参数
+   * @returns 成功返回"success"字符串
+   * @throws HttpException 当聊天记录不存在或用户无权访问时抛出400错误
+   * @throws HttpException 当删除操作未影响任何记录时抛出400错误
+   */
   async deleteChat(request: Request) {
     const token = request.get("authorization");
     const chatId = Number(request.query.chatId);
