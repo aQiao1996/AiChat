@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import OpenAI from "openai";
@@ -372,6 +372,11 @@ export class ChatService {
     return messagesList;
   }
 
+  /**
+   * 处理聊天消息内容，提取角色、内容和时间戳信息
+   * @param chat 包含消息列表的聊天对象
+   * @returns 返回处理后的消息列表，包含角色、内容和时间戳字段
+   */
   handleMessageContent(chat: Chat) {
     let list = [];
     for (let index = 0; index < chat.messages.length; index++) {
@@ -383,5 +388,22 @@ export class ChatService {
       });
     }
     return list;
+  }
+
+  async deleteChat(request: Request) {
+    const token = request.get("authorization");
+    const chatId = Number(request.query.chatId);
+    const userInfo = getTokenUserInfo(token);
+    const chatRes = await this.chat.findOne({
+      where: { id: chatId, user: { id: userInfo.id } },
+    });
+    if (!chatRes) {
+      throw new HttpException(`chatId：${chatId} 不存在或无权访问`, HttpStatus.BAD_REQUEST);
+    }
+    const result = await this.chat.delete(chatId);
+    if (result.affected === 0) {
+      throw new HttpException(`chatId：${chatId} 不存在`, HttpStatus.BAD_REQUEST);
+    }
+    return "success";
   }
 }
