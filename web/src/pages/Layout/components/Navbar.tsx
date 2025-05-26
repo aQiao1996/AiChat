@@ -10,7 +10,6 @@ import type { ICreateChatResponse } from "@/api/chat";
 const Navbar = () => {
   const dispatch = useAppDispatch();
   const { currentChatId } = useAppSelector(state => state.user);
-  console.log("🚀 ~ Navbar ~ currentChatId:", currentChatId);
   const [chatsHistory, setChatsHistory] = useState<ICreateChatResponse[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -31,11 +30,6 @@ const Navbar = () => {
     const { id } = data.find(item => item.id === currentChatId) || {};
     if (!id) return;
     getCurrentChatMessages(id);
-  };
-
-  /**
-   * 获取指定聊天ID的历史消息
-    getCurrentChatMessages(currentChatId);
   };
 
   /**
