@@ -16,10 +16,7 @@ export const login = createAsyncThunk("user/login", async (params: ILoginParams,
     const result = await loginApi(params);
     return result;
   } catch (error) {
-    return rejectWithValue({
-      message: error instanceof Error ? error.message : "未知错误",
-      ...(error as any)?.response?.data,
-    });
+    return rejectWithValue({ ...(error as any)?.response });
   }
 });
 

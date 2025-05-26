@@ -1,5 +1,6 @@
 import { message as antdMessage } from "antd";
 import store from "@/store";
+import { setToken } from "@/store/modules/user";
 
 /**
  * 请求方法类型
@@ -150,8 +151,9 @@ const errorHandler = (error: any): never => {
           break;
         case 401:
           antdMessage.open({ content: "未授权，请登录", type: "error" });
+          store.dispatch(setToken("")); // 清除 token ,会直接走 AuthComponent 组件
           // 跳转登录页
-          window.location.href = "/login";
+          // window.location.href = "/login";
           break;
         case 403:
           antdMessage.open({ content: "拒绝访问", type: "error" });
@@ -219,7 +221,7 @@ const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise
     }
 
     // 检查状态
-    checkStatus(response);
+    await checkStatus(response);
 
     // 解析JSON响应
     const responseData = await response.json();

@@ -49,6 +49,7 @@ const Home = () => {
     dispatch(setLoading(true));
     try {
       const { data } = await dispatch(createChat({ content: message, chatId: currentChatId })).unwrap();
+      console.log("🚀 ~ sendMessage ~ data:", data);
       const chatId = data.id;
       if (!chatId) return;
       dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
@@ -56,17 +57,10 @@ const Home = () => {
       currentChatId === 0 && dispatch(setTitle(data.title));
       // 创建消息流式响应
       createChatStream({ chatId, model });
-    } catch (error: any) {
-      if (error.status === 401) {
-        dispatch(setToken(""));
-        messageApi.error("登录过期，请重新登录");
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
-        return;
-      }
+    } catch (error) {
+      console.log("🚀 ~ sendMessage ~ error:", error);
+    } finally {
       dispatch(setLoading(false));
-      messageApi.error(error.message || "未知错误");
     }
   };
 

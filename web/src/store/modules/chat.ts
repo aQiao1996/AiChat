@@ -53,10 +53,7 @@ export const createChat = createAsyncThunk(
       const result = await createChatApi(body);
       return result;
     } catch (error) {
-      return rejectWithValue({
-        message: error instanceof Error ? error.message : "未知错误",
-        ...(error as any)?.response?.data,
-      });
+      return rejectWithValue({ ...(error as any)?.response });
     }
   }
 );
@@ -67,10 +64,7 @@ export const getUserChatMenu = createAsyncThunk("chat/userChatMenu", async (_, {
     const result = await getUserChatMenuApi();
     return result;
   } catch (error) {
-    return rejectWithValue({
-      message: error instanceof Error ? error.message : "未知错误",
-      ...(error as any)?.response?.data,
-    });
+    return rejectWithValue({ ...(error as any)?.response });
   }
 });
 
@@ -80,10 +74,7 @@ export const getMessagesHistory = createAsyncThunk("chat/userChatInfos", async (
     const result = await getMessagesHistoryApi(id);
     return result;
   } catch (error) {
-    return rejectWithValue({
-      message: error instanceof Error ? error.message : "未知错误",
-      ...(error as any)?.response?.data,
-    });
+    return rejectWithValue({ ...(error as any)?.response });
   }
 });
 
@@ -93,10 +84,7 @@ export const deleteChat = createAsyncThunk("chat/deleteChat", async (id: number,
     const result = await deleteChatApi(id);
     return result;
   } catch (error) {
-    return rejectWithValue({
-      message: error instanceof Error ? error.message : "未知错误",
-      ...(error as any)?.response?.data,
-    });
+    return rejectWithValue({ ...(error as any)?.response });
   }
 });
 
@@ -107,7 +95,6 @@ const chatStore = createSlice({
   // * 修改数据的同步方法
   reducers: {
     updateMessages(state, { payload }: { payload: { type: "add" | "update"; data: IMessage | IMessage[] } }) {
-      console.log("🚀 ~ updateMessages ~ payload:", payload);
       if (payload.type === "add") {
         state.messages.push(payload.data as IMessage);
         return;
