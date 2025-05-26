@@ -1,5 +1,5 @@
 import { Button, Input, Tooltip, message } from "antd";
-import { useImperativeHandle, useState } from "react";
+import { useImperativeHandle, useRef, useState } from "react";
 import { useAppDispatch } from "@/store";
 import { updateModel, setLoading } from "@/store/modules/chat";
 import { LoadingOutlined, PauseCircleOutlined, SendOutlined } from "@ant-design/icons";
@@ -43,6 +43,7 @@ const MyInput = ({ sendMessage, eventSource, ref }: IMyInputProps) => {
   const [deepThinking, setDeepThinking] = useState(false);
   const dispatch = useAppDispatch();
   const [messageApi, contextHolder] = message.useMessage();
+  const isComposing = useRef(false); // 是否正在输入
 
   // 暴露方法
   useImperativeHandle(ref, () => ({ setSendBtnState }));
@@ -67,6 +68,8 @@ const MyInput = ({ sendMessage, eventSource, ref }: IMyInputProps) => {
       messageApi.error("回答输出中，请稍等");
       return;
     }
+    // 输入框回车发送消息与输入法冲突的问题结局
+    if(isComposing.current) return;
     // 搜索
     if (!event.shiftKey && event.code === "Enter") {
       event.preventDefault();
@@ -114,6 +117,8 @@ const MyInput = ({ sendMessage, eventSource, ref }: IMyInputProps) => {
           value={value}
           onChange={e => setValue(e.target.value)}
           onPressEnter={handleConfirm}
+          onCompositionStart={()=> isComposing.current = true}
+          onCompositionEnd={()=> isComposing.current = false}
         />
         <div className="flex items-center justify-between">
           <Button color={deepThinking ? "primary" : "default"} variant="outlined" onClick={handleDeepThinking}>
