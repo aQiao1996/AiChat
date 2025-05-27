@@ -7,7 +7,6 @@ import MarkdownRenderer from "@/pages/components/MarkdownRenderer";
 const Content = () => {
   const chatListRef = useRef<HTMLDivElement>(null);
   const { messages, currentAnswer, currentReasoning, isLoading, reasoningTime } = useAppSelector(state => state.chat);
-  console.log("🚀 ~ Content ~ messages:", messages);
 
   useEffect(() => {
     if (chatListRef.current) {

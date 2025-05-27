@@ -49,7 +49,6 @@ const Home = () => {
     dispatch(setLoading(true));
     try {
       const { data } = await dispatch(createChat({ content: message, chatId: currentChatId })).unwrap();
-      console.log("🚀 ~ sendMessage ~ data:", data);
       const chatId = data.id;
       if (!chatId) return;
       dispatch(updateMessages({ type: "add", data: { role: "user", content: message } }));
