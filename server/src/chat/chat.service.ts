@@ -135,7 +135,8 @@ export class ChatService {
         abortController.abort("Stream timeout after 30 seconds");
       }, 30000);
 
-      let answerResult = ""; // 回答
+      let answerResult = ""; // 回答结果
+      let reasoningResult = ""; // 推理结果
 
       (async () => {
         try {
@@ -156,6 +157,7 @@ export class ChatService {
                 content: delta.reasoning_content,
                 role: "assistant",
               });
+              reasoningResult += delta.reasoning_content;
             }
             // 回答
             if (delta.content) {
@@ -172,7 +174,9 @@ export class ChatService {
           }
           // 完成后添加 AI 回复的消息
           const message = new Message();
-          message.content = { messages: { content: answerResult, role: "assistant" } };
+          message.content = {
+            messages: { content: answerResult, role: "assistant", reasoningContent: reasoningResult },
+          };
           message.role = "assistant";
           message.timestamp = new Date();
           message.chat = chat; // 关联 chat 实体
@@ -385,6 +389,7 @@ export class ChatService {
         role: item.role,
         content: item.content.messages.content,
         timestamp: item.timestamp,
+        reasoningContent: item.content.messages?.reasoningContent ?? null,
       });
     }
     return list;
@@ -392,7 +397,7 @@ export class ChatService {
 
   /**
    * 删除指定聊天记录
-   * 
+   *
    * @param request 请求对象，包含授权token和查询参数chatId
    * @throws HttpException 当聊天记录不存在或用户无权访问时抛出异常
    * @returns 删除成功返回null，失败抛出异常
