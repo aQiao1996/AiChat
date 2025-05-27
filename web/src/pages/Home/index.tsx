@@ -128,7 +128,7 @@ const Home = () => {
         // 如果有思考答案
         const messageItem: IMessage = { content: answerResult, role };
         if (reasoningResult) {
-          messageItem.reasoning = reasoningResult;
+          messageItem.reasoningContent = reasoningResult;
           messageItem.reasoningTime = (reasoningTimeMs / 1000).toFixed(2);
         }
         dispatch(updateMessages({ type: "add", data: messageItem }));

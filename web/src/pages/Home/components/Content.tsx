@@ -7,6 +7,7 @@ import MarkdownRenderer from "@/pages/components/MarkdownRenderer";
 const Content = () => {
   const chatListRef = useRef<HTMLDivElement>(null);
   const { messages, currentAnswer, currentReasoning, isLoading, reasoningTime } = useAppSelector(state => state.chat);
+  console.log("🚀 ~ Content ~ messages:", messages);
 
   useEffect(() => {
     if (chatListRef.current) {
@@ -35,13 +36,13 @@ const Content = () => {
                 </Avatar>
                 <div className="flex-1 p-4 m-4">
                   {/* 思考 */}
-                  {item.reasoning && (
+                  {item.reasoningContent && (
                     <>
                       <span className="bg-gray-100 p-4 rounded-8 text-gray-500">
-                        思考中{`（用时${item.reasoningTime}秒）`}
+                        {item.reasoningTime ? `思考中（用时${item.reasoningTime}秒）` : "已深度思考"}
                       </span>
                       <div className="bg-gray-100 p-4 rounded-8 mt-8 text-gray-500">
-                        <MarkdownRenderer markdown={item.reasoning} />
+                        <MarkdownRenderer markdown={item.reasoningContent} />
                       </div>
                     </>
                   )}
