@@ -19,6 +19,8 @@ interface IMessagesHistoryResponse extends ICreateChatResponse {
   messages: IMessage[];
 }
 
+export type TUpdateChatTitleParams = ICreateChatResponse;
+
 /**
  * 创建聊天会话
  * @param body 聊天参数
@@ -60,6 +62,7 @@ export const deleteChatApi = (id: number) => {
  * @param title 新的聊天会话标题
  * @returns 一个 Promise 对象，解析为更新操作结果的字符串信息
  */
-export const updateChatTitleApi = (id: number, title: string) => {
-  return request.put<string>(`/chat/updateChatTitle?chatId=${id}&title=${title}`);
+export const updateChatTitleApi = (body: TUpdateChatTitleParams) => {
+  console.log("🚀 ~ updateChatTitleApi ~ body:", body);
+  return request.put(`/chat/updateChatTitle`, body);
 };

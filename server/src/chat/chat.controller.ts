@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Sse, Get, Request, Query, Delete, Put } from "@nestjs/common";
 import { ChatService } from "./chat.service";
-import { CreateChatDto } from "./dto/create-chat.dto";
+import { CreateChatDto, UpdateChatTitleDto } from "./dto/create-chat.dto";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 @Controller("chat")
@@ -57,8 +57,7 @@ export class ChatController {
   }
 
   @Put("/updateChatTitle")
-  @ApiQuery({ name: "chatId", required: false, description: "消息id", type: Number })
-  @ApiQuery({ name: "title", required: false, description: "标题", type: String })
+  @ApiBody({ type: UpdateChatTitleDto })
   @ApiOperation({ summary: "更新标题", description: "更新标题" })
   @ApiBearerAuth()
   async updateChatTitle(@Request() request) {

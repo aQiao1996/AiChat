@@ -116,12 +116,14 @@ const Navbar = () => {
   const handleModalOk = async () => {
     if (!inputValue) return;
     if (!currentChatData.current) return;
-    await dispatch(updateChatTitle(currentChatData.current)).unwrap();
+    await dispatch(updateChatTitle({ id: currentChatData.current.id, title: inputValue })).unwrap();
+    currentChatData.current.title = inputValue;
     messageApi.success("更新标题成功");
     setChatsHistory(prevChats =>
       prevChats.map(chat => (chat.id === currentChatData.current?.id ? { ...chat, title: inputValue } : chat))
     );
     setInputValue("");
+    setIsModalOpen(false);
   };
 
   /**
@@ -148,7 +150,7 @@ const Navbar = () => {
         onOk={handleModalOk}
         onCancel={handleModalCancel}
       >
-        <TextArea rows={4} maxLength={6} value={inputValue} onChange={e => setInputValue(e.target.value)} />
+        <TextArea rows={4} maxLength={30} value={inputValue} onChange={e => setInputValue(e.target.value)} />
       </Modal>
 
       <div className="p-24">

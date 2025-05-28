@@ -429,19 +429,19 @@ export class ChatService {
    * @returns 更新成功返回 null，失败抛出异常
    */
   async updateChatTitle(request: Request) {
-    if (!request.query.chatId || !request.query.title) {
+    if (!request.body.id || !request.body.title) {
       throw new HttpException("缺少参数", HttpStatus.BAD_REQUEST);
     }
     const token = request.get("authorization");
-    const chatId = Number(request.query.chatId);
-    const title = request.query.title;
-    if (typeof title === "string" && title.length > 20) {
-      throw new HttpException("标题长度不能超过 20 个字符", HttpStatus.BAD_REQUEST);
+    const id = Number(request.body.id);
+    const title = request.body.title;
+    if (typeof title === "string" && title.length > 30) {
+      throw new HttpException("标题长度不能超过 30 个字符", HttpStatus.BAD_REQUEST);
     }
     const userInfo = getTokenUserInfo(token);
-    const result = await this.chat.update({ id: chatId, user: { id: userInfo.id } }, { title: title as string });
+    const result = await this.chat.update({ id, user: { id: userInfo.id } }, { title: title as string });
     if (result.affected === 0) {
-      throw new HttpException(`chatId：${chatId} 不存在或无权访问`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`chatId：${id} 不存在或无权访问`, HttpStatus.BAD_REQUEST);
     }
     return null;
   }

@@ -3,9 +3,10 @@ import {
   createChatApi,
   getUserChatMenuApi,
   getMessagesHistoryApi,
-  type ICreateChatParams,
   deleteChatApi,
   updateChatTitleApi,
+  type ICreateChatParams,
+  type TUpdateChatTitleParams,
 } from "@/api/chat";
 import type { IMessage, IModel } from "@/types/chat";
 // import type { RootState } from "..";
@@ -92,9 +93,9 @@ export const deleteChat = createAsyncThunk("chat/deleteChat", async (id: number,
 // 更新标题
 export const updateChatTitle = createAsyncThunk(
   "chat/updateChatTitle",
-  async ({ id, title }: { id: number; title: string }, { rejectWithValue }) => {
+  async (body: TUpdateChatTitleParams, { rejectWithValue }) => {
     try {
-      const result = await updateChatTitleApi(id, title);
+      const result = await updateChatTitleApi(body);
       return result;
     } catch (error) {
       return rejectWithValue({ ...(error as any)?.response });
