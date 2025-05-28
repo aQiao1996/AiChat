@@ -61,7 +61,7 @@ const Navbar = () => {
    * 处理菜单项点击事件
    * @param param0 点击的菜单项key值
    * @param id 当前聊天记录的ID
-   * @description 
+   * @description
    * - 当key为"rename"时执行重命名操作(待实现)
    * - 当key为"delete"时删除指定聊天记录
    *   - 如果删除的是当前聊天，则创建新聊天
@@ -118,17 +118,18 @@ const Navbar = () => {
         {/*  */}
         <div>
           {chatsHistory.map(item => (
-            <Dropdown menu={{ items, onClick: event => handleMenuClick(event, item.id) }} key={item.id}>
-              <div
-                className={`!text-[#333] flex cursor-pointer px-4 py-8 rounded-8 mb-8 hover:bg-[#eeeeee80] ${
-                  currentChatId === item.id ? "bg-[#eeeeee80]" : ""
-                }`}
-                onClick={() => handleItemClick(item)}
-              >
-                <span className="text-16 mr-8 flex-1">{item.title}</span>
+            <div
+              className={`!text-[#333] flex cursor-pointer px-4 py-8 rounded-8 mb-8 hover:bg-[#eeeeee80] ${
+                currentChatId === item.id ? "bg-[#eeeeee80]" : ""
+              }`}
+              key={item.id}
+              onClick={() => handleItemClick(item)}
+            >
+              <span className="text-16 mr-8 flex-1">{item.title}</span>
+              <Dropdown menu={{ items, onClick: event => handleMenuClick(event, item.id) }} key={item.id}>
                 <MoreOutlined />
-              </div>
-            </Dropdown>
+              </Dropdown>
+            </div>
           ))}
         </div>
       </div>
