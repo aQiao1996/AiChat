@@ -1,17 +1,29 @@
-import { useEffect, useState } from "react";
-import { Avatar, Divider, Dropdown, message, type MenuProps } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { Avatar, Divider, Dropdown, Input, message, Modal, type MenuProps } from "antd";
 import { useAppSelector, useAppDispatch } from "@/store";
 import AvatarImage from "@/assets/images/avatar.png";
 import { MessageOutlined, MoreOutlined } from "@ant-design/icons";
-import { updateMessages, setTitle, getUserChatMenu, getMessagesHistory, deleteChat } from "@/store/modules/chat";
+import {
+  updateMessages,
+  setTitle,
+  getUserChatMenu,
+  getMessagesHistory,
+  deleteChat,
+  updateChatTitle,
+} from "@/store/modules/chat";
 import { setCurrentChatId } from "@/store/modules/user";
 import type { ICreateChatResponse } from "@/api/chat";
+
+const { TextArea } = Input;
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
   const { currentChatId } = useAppSelector(state => state.user);
   const [chatsHistory, setChatsHistory] = useState<ICreateChatResponse[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const currentChatData = useRef<ICreateChatResponse>(null);
 
   const items: MenuProps["items"] = [
     { key: "rename", label: <span>重命名</span> },
@@ -62,19 +74,27 @@ const Navbar = () => {
    * @param param0 点击的菜单项key值
    * @param id 当前聊天记录的ID
    * @description
-   * - 当key为"rename"时执行重命名操作(待实现)
+   * - 当key为"rename"时执行重命名操作
+   *   - 调用dispatch更新聊天标题
+   *   - 更新聊天历史状态
    * - 当key为"delete"时删除指定聊天记录
-   *   - 如果删除的是当前聊天，则创建新聊天
+   *   - 更新聊天历史状态，过滤掉被删除的聊天记录
    *   - 更新聊天历史状态
    */
-  const handleMenuClick = async ({ key }: { key: string }, id: number) => {
+  const handleMenuClick = async (
+    { key, domEvent }: { key: string; domEvent: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement> },
+    params: ICreateChatResponse
+  ) => {
+    domEvent.stopPropagation(); // 阻止冒泡
+    currentChatData.current = params;
     if (key === "rename") {
-      // TODO: 重命名
+      setInputValue(params.title);
+      setIsModalOpen(true);
     } else if (key === "delete") {
-      await dispatch(deleteChat(id)).unwrap();
-      if (id === currentChatId) handleNewChat();
+      await dispatch(deleteChat(params.id)).unwrap();
+      if (params.id === currentChatId) handleNewChat();
       messageApi.success("删除成功");
-      setChatsHistory(prevChats => prevChats.filter(chat => chat.id !== id));
+      setChatsHistory(prevChats => prevChats.filter(chat => chat.id !== params.id));
     }
   };
 
@@ -90,6 +110,31 @@ const Navbar = () => {
     dispatch(updateMessages({ type: "update", data: data.messages }));
   };
 
+  /**
+   * 处理模态框确认操作，更新聊天标题
+   * @async
+   * @returns {Promise<void>}
+   */
+  const handleModalOk = async () => {
+    if (!inputValue) return;
+    if (!currentChatData.current) return;
+    await dispatch(updateChatTitle(currentChatData.current)).unwrap();
+    messageApi.success("更新标题成功");
+    setChatsHistory(prevChats =>
+      prevChats.map(chat => (chat.id === currentChatData.current?.id ? { ...chat, title: inputValue } : chat))
+    );
+    setInputValue("");
+  };
+
+  /**
+   * 处理模态框取消操作，清空输入并关闭模态框
+   * @returns {void}
+   */
+  const handleModalCancel = () => {
+    setInputValue("");
+    setIsModalOpen(false);
+  };
+
   useEffect(() => {
     getUserChatData();
   }, [currentChatId]);
@@ -97,6 +142,18 @@ const Navbar = () => {
   return (
     <>
       {contextHolder}
+      <Modal
+        title="编辑对话名称"
+        closable
+        cancelText="取消"
+        okText="确定"
+        open={isModalOpen}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+      >
+        <TextArea rows={4} maxLength={6} value={inputValue} onChange={e => setInputValue(e.target.value)} />
+      </Modal>
+
       <div className="p-24">
         {/*  */}
         <div className="h-100">
@@ -126,7 +183,13 @@ const Navbar = () => {
               onClick={() => handleItemClick(item)}
             >
               <span className="text-16 mr-8 flex-1">{item.title}</span>
-              <Dropdown menu={{ items, onClick: event => handleMenuClick(event, item.id) }} key={item.id}>
+              <Dropdown
+                menu={{
+                  items,
+                  onClick: event => handleMenuClick(event, item),
+                }}
+                key={item.id}
+              >
                 <MoreOutlined />
               </Dropdown>
             </div>

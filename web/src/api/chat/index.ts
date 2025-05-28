@@ -38,13 +38,28 @@ export const getUserChatMenuApi = () => {
 
 /**
  * 获取指定聊天ID的消息历史记录
- * @param id 聊天ID
- * @returns 包含消息历史记录的Promise对象
+ * @param id 聊天ID，用于唯一标识一个聊天会话
+ * @returns 一个 Promise 对象，解析为包含聊天会话ID、标题、创建日期和消息列表的响应数据
  */
 export const getMessagesHistoryApi = (id: number) => {
   return request.get<IMessagesHistoryResponse>(`/chat/messagesHistory?chatId=${id}`);
 };
 
+/**
+ * 删除指定聊天ID的聊天会话
+ * @param id 聊天ID，用于唯一标识要删除的聊天会话
+ * @returns 一个 Promise 对象，解析为删除操作结果的字符串信息
+ */
 export const deleteChatApi = (id: number) => {
   return request.delete<string>(`/chat/deleteChat?chatId=${id}`);
+};
+
+/**
+ * 更新指定聊天ID的聊天会话标题
+ * @param id 聊天ID，用于唯一标识要更新标题的聊天会话
+ * @param title 新的聊天会话标题
+ * @returns 一个 Promise 对象，解析为更新操作结果的字符串信息
+ */
+export const updateChatTitleApi = (id: number, title: string) => {
+  return request.put<string>(`/chat/updateChatTitle?chatId=${id}&title=${title}`);
 };

@@ -5,6 +5,7 @@ import {
   getMessagesHistoryApi,
   type ICreateChatParams,
   deleteChatApi,
+  updateChatTitleApi,
 } from "@/api/chat";
 import type { IMessage, IModel } from "@/types/chat";
 // import type { RootState } from "..";
@@ -87,6 +88,19 @@ export const deleteChat = createAsyncThunk("chat/deleteChat", async (id: number,
     return rejectWithValue({ ...(error as any)?.response });
   }
 });
+
+// 更新标题
+export const updateChatTitle = createAsyncThunk(
+  "chat/updateChatTitle",
+  async ({ id, title }: { id: number; title: string }, { rejectWithValue }) => {
+    try {
+      const result = await updateChatTitleApi(id, title);
+      return result;
+    } catch (error) {
+      return rejectWithValue({ ...(error as any)?.response });
+    }
+  }
+);
 
 const chatStore = createSlice({
   name: "chat",
