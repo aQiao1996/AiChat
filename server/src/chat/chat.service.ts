@@ -399,22 +399,49 @@ export class ChatService {
    * 删除指定聊天记录
    *
    * @param request 请求对象，包含授权token和查询参数chatId
-   * @throws HttpException 当聊天记录不存在或用户无权访问时抛出异常
+   * @throws HttpException 当缺少必要参数、聊天记录不存在或用户无权访问时抛出异常
    * @returns 删除成功返回null，失败抛出异常
    */
   async deleteChat(request: Request) {
+    // 输入验证
+    if (!request.query.chatId) {
+      this.logger.error("Missing chatId in request query");
+      throw new HttpException("缺少 chatId 参数", HttpStatus.BAD_REQUEST);
+    }
     const token = request.get("authorization");
     const chatId = Number(request.query.chatId);
     const userInfo = getTokenUserInfo(token);
-    const chatRes = await this.chat.findOne({
-      where: { id: chatId, user: { id: userInfo.id } },
-    });
-    if (!chatRes) {
+    // 直接执行删除操作，通过 where 条件确保用户权限
+    const result = await this.chat.delete({ id: chatId, user: { id: userInfo.id } });
+    if (result.affected === 0) {
+      this.logger.error(`Failed to delete chat with chatId: ${chatId}`);
       throw new HttpException(`chatId：${chatId} 不存在或无权访问`, HttpStatus.BAD_REQUEST);
     }
-    const result = await this.chat.delete(chatId);
+
+    return null;
+  }
+
+  /**
+   * 更新指定聊天记录的标题
+   *
+   * @param request 请求对象，包含授权 token、chatId 和 title 查询参数
+   * @throws HttpException 当缺少必要参数、标题过长、聊天记录不存在或用户无权访问时抛出异常
+   * @returns 更新成功返回 null，失败抛出异常
+   */
+  async updateChatTitle(request: Request) {
+    if (!request.query.chatId || !request.query.title) {
+      throw new HttpException("缺少参数", HttpStatus.BAD_REQUEST);
+    }
+    const token = request.get("authorization");
+    const chatId = Number(request.query.chatId);
+    const title = request.query.title;
+    if (typeof title === "string" && title.length > 20) {
+      throw new HttpException("标题长度不能超过 20 个字符", HttpStatus.BAD_REQUEST);
+    }
+    const userInfo = getTokenUserInfo(token);
+    const result = await this.chat.update({ id: chatId, user: { id: userInfo.id } }, { title: title as string });
     if (result.affected === 0) {
-      throw new HttpException(`chatId：${chatId} 不存在`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(`chatId：${chatId} 不存在或无权访问`, HttpStatus.BAD_REQUEST);
     }
     return null;
   }
