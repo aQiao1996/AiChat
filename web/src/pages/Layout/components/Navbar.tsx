@@ -112,8 +112,6 @@ const Navbar = () => {
 
   /**
    * 处理模态框确认操作，更新聊天标题
-   * @async
-   * @returns {Promise<void>}
    */
   const handleModalOk = async () => {
     if (!inputValue) return;
@@ -128,7 +126,6 @@ const Navbar = () => {
 
   /**
    * 处理模态框取消操作，清空输入并关闭模态框
-   * @returns {void}
    */
   const handleModalCancel = () => {
     setInputValue("");
