@@ -1,8 +1,9 @@
-import { message as antdMessage, Spin } from "antd";
+import { message as antdMessage } from "antd";
 import store from "@/store";
 import { setToken } from "@/store/modules/user";
 import { createRoot } from "react-dom/client";
 import React from "react";
+import Loading from "@/pages/components/Loading";
 
 /**
  * 请求方法类型
@@ -306,8 +307,18 @@ function showLoading() {
   if (requestCount === 0) {
     const dom = document.createElement("div");
     dom.setAttribute("id", "loading");
+    dom.style.position = "fixed";
+    dom.style.top = "0";
+    dom.style.left = "0";
+    dom.style.width = "100%";
+    dom.style.height = "100%";
+    dom.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    dom.style.display = "flex";
+    dom.style.justifyContent = "center";
+    dom.style.alignItems = "center";
+    dom.style.zIndex = "9999";
     document.body.appendChild(dom);
-    createRoot(dom).render(React.createElement(Spin, { size: "large", fullscreen: true, tip: "Loading..." }));
+    createRoot(dom).render(React.createElement(Loading));
   }
   requestCount++;
 }
