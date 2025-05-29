@@ -1,6 +1,8 @@
-import { message as antdMessage } from "antd";
+import { message as antdMessage, Spin } from "antd";
 import store from "@/store";
 import { setToken } from "@/store/modules/user";
+import { createRoot } from "react-dom/client";
+import React from "react";
 
 /**
  * 请求方法类型
@@ -294,8 +296,37 @@ export const patch = <T>(
   return fetchRequest<T>(url, { ...options, method: "PATCH", body });
 };
 
+// 当前正在请求的数量
+let requestCount = 0;
+
 /**
- * 带loading的请求封装
+ * 显示 loading
+ */
+function showLoading() {
+  if (requestCount === 0) {
+    const dom = document.createElement("div");
+    dom.setAttribute("id", "loading");
+    document.body.appendChild(dom);
+    createRoot(dom).render(React.createElement(Spin, { size: "large", fullscreen: true, tip: "Loading..." }));
+  }
+  requestCount++;
+}
+
+/**
+ * 隐藏 loading
+ */
+function hideLoading() {
+  requestCount--;
+  if (requestCount === 0) {
+    const loadingDom = document.getElementById("loading");
+    if (loadingDom) {
+      document.body.removeChild(loadingDom);
+    }
+  }
+}
+
+/**
+ * 带 loading 的请求封装
  */
 export const requestWithLoading = async <T>(
   method: HttpMethod,
@@ -303,9 +334,8 @@ export const requestWithLoading = async <T>(
   data?: any,
   params?: Record<string, any>,
   options?: Omit<FetchOptions, "method" | "body" | "params">
-) => {
-  // 这里可以添加loading逻辑
-  // const loading = message.loading('请求中...', 0);
+): Promise<ApiResponse<T>> => {
+  showLoading();
   try {
     if (method === "GET") {
       return await get<T>(url, params, options);
@@ -318,8 +348,9 @@ export const requestWithLoading = async <T>(
     } else if (method === "PATCH") {
       return await patch<T>(url, data, options);
     }
+    throw new Error("Unsupported HTTP method");
   } finally {
-    // loading();
+    hideLoading();
   }
 };
 

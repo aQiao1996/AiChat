@@ -44,7 +44,7 @@ export const getUserChatMenuApi = () => {
  * @returns 一个 Promise 对象，解析为包含聊天会话ID、标题、创建日期和消息列表的响应数据
  */
 export const getMessagesHistoryApi = (id: number) => {
-  return request.get<IMessagesHistoryResponse>(`/chat/messagesHistory?chatId=${id}`);
+  return request.requestWithLoading<IMessagesHistoryResponse>("GET", `/chat/messagesHistory?chatId=${id}`);
 };
 
 /**
