@@ -13,7 +13,7 @@ import {
   setTitle,
 } from "@/store/modules/chat";
 import { useNavigate } from "react-router-dom";
-import { setToken, setCurrentChatId } from "@/store/modules/user";
+import { setCurrentChatId } from "@/store/modules/user";
 import type { IMessage, IModel } from "@/types/chat";
 
 interface IStreamParams {
