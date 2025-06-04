@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { ChatModule } from "./chat/chat.module";
-console.log("🚀 ~ app.module.ts:11 ~ process.env.NODE_ENV:", process.env.NODE_ENV);
+console.log("🚀 ~ app.module.ts:11 ~ process.env.NODE_ENV:", process.env.NODE_ENV, process.env);
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: [`.env.${process.env.NODE_ENV}`] }),
@@ -13,7 +13,7 @@ console.log("🚀 ~ app.module.ts:11 ~ process.env.NODE_ENV:", process.env.NODE_
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
         console.log("🚀 ~ app.module.ts:13 ~ configService:", configService.get<"mysql">("DATABASE_TYPE"));
         return {
-          type: configService.get<"mysql">("DATABASE_TYPE"), // 数据库类型
+          type: process.env.DATABASE_TYPE as "mysql", // 数据库类型
           host: configService.get<string>("DATABASE_HOST"), // 数据库主机类型
           port: Number(configService.get<number>("DATABASE_PORT")), // 端口号
           username: configService.get<string>("DATABASE_USERNAME"), // 用户名
