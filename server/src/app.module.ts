@@ -4,10 +4,18 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { ChatModule } from "./chat/chat.module";
+import { join } from "node:path";
 console.log("🚀 ~ app.module.ts:11 ~ process.env.NODE_ENV:", process.env.NODE_ENV, process.env);
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: [`.env.${process.env.NODE_ENV}`] }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [
+        process.env.NODE_ENV === "production"
+          ? join(__dirname, "../../.env.production")
+          : join(__dirname, "../../.env.development"),
+      ],
+    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
