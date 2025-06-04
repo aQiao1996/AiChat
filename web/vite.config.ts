@@ -2,7 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import path from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import viteImagemin from "vite-plugin-imagemin";
+// import viteImagemin from "vite-plugin-imagemin";
 import viteCompression from "vite-plugin-compression";
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -42,17 +42,17 @@ export default defineConfig(({ mode, command }) => {
         open: false, // 依赖分析,不自动打开页面
       }),
       // 图片压缩
-      viteImagemin({
-        verbose: true, // 是否在控制台输出压缩结果
-        gifsicle: { optimizationLevel: 7, interlaced: false },
-        optipng: { optimizationLevel: 7 }, // 无损压缩配置，无损压缩下图片质量不会变差
-        mozjpeg: { quality: 20 },
-        pngquant: { quality: [0.8, 0.9], speed: 4 }, // 有损压缩配置，有损压缩下图片质量可能会变差
-        webp: { quality: 75 },
-        svgo: {
-          plugins: [{ name: "removeViewBox" }, { name: "removeEmptyAttrs", active: false }],
-        },
-      }),
+      // viteImagemin({
+      //   verbose: true, // 是否在控制台输出压缩结果
+      //   gifsicle: { optimizationLevel: 7, interlaced: false },
+      //   optipng: { optimizationLevel: 7 }, // 无损压缩配置，无损压缩下图片质量不会变差
+      //   mozjpeg: { quality: 20 },
+      //   pngquant: { quality: [0.8, 0.9], speed: 4 }, // 有损压缩配置，有损压缩下图片质量可能会变差
+      //   webp: { quality: 75 },
+      //   svgo: {
+      //     plugins: [{ name: "removeViewBox" }, { name: "removeEmptyAttrs", active: false }],
+      //   },
+      // }),
       // gzip
       viteCompression({
         verbose: true, // 默认即可
