@@ -40,6 +40,8 @@ async function bootstrap() {
       persistAuthorization: true, // 启用持久化
     },
   });
+  const env = process.env.NODE_ENV || "环境错误";
+  console.log(`🚀 ~ main.ts ~ 当前运行环境: ${env}`);
   await app.listen(3000);
 }
 bootstrap();
