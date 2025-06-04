@@ -45,6 +45,8 @@ async function bootstrap() {
       persistAuthorization: true, // 启用持久化
     },
   });
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000, () => {
+    console.log(`🚀 ~ main.ts ~ 启动成功,端口号: ${process.env.PORT}`);
+  });
 }
 bootstrap();
