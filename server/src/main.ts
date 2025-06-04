@@ -47,6 +47,7 @@ async function bootstrap() {
   });
   await app.listen(process.env.PORT || 3000, () => {
     console.log(`🚀 ~ main.ts ~ 启动成功,端口号: ${process.env.PORT}`);
+    console.log(`🚀 ~ main.ts ~ 启动成功,环境变量:`, process.env);
   });
 }
 bootstrap();
