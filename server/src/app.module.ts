@@ -7,7 +7,7 @@ import { ChatModule } from "./chat/chat.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ".env.development" }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.development", ".env.production"] }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({
@@ -16,7 +16,7 @@ import { ChatModule } from "./chat/chat.module";
         port: Number(configService.get<number>("DATABASE_PORT")), // 端口号
         username: configService.get<string>("DATABASE_USERNAME"), // 用户名
         password: configService.get<string>("DATABASE_PASSWORD"), // 密码
-        database: configService.get<string>("DATABASE_PASSWORD"), // 要连接的数据库名称
+        database: configService.get<string>("DATABASE_NAME"), // 要连接的数据库名称
         timezone: "Z", // 纠正时区偏差
         dateStrings: true, // 强制制日期类型作为字符串返回，而不是膨胀为JavaScript date对象
         // entities: [__dirname + "/**/*.entity{.ts,.js}"], // 实体类数组
