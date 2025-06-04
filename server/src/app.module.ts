@@ -13,7 +13,7 @@ console.log("🚀 ~ app.module.ts:11 ~ process.env.NODE_ENV:", process.env.NODE_
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
         console.log("🚀 ~ app.module.ts:13 ~ configService:", configService.get<"mysql">("DATABASE_TYPE"));
         return {
-          type: process.env.DATABASE_TYPE as "mysql", // 数据库类型
+          type: "mysql", // 数据库类型
           host: configService.get<string>("DATABASE_HOST"), // 数据库主机类型
           port: Number(configService.get<number>("DATABASE_PORT")), // 端口号
           username: configService.get<string>("DATABASE_USERNAME"), // 用户名
