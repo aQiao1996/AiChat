@@ -7,8 +7,13 @@ import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/http-exception.filter";
 import { ResponseInterceptor } from "./common/response.interceptor";
+// import { Logger } from "@nestjs/common";
 
 async function bootstrap() {
+  // * 环境日志
+  // const logger = new Logger("main.ts");
+  // logger.log(`🚀 ~ main.ts ~ 当前运行环境: ${process.env.NODE_ENV || "环境错误"}`, process.env.DATABASE_NAME);
+  console.log(`🚀 ~ main.ts ~ 当前运行环境: ${process.env.NODE_ENV || "环境错误"}`, process.env.DATABASE_NAME);
   // * 使用 express 作为默认框架
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true, // cors 处理跨域 或者直接 app.enableCors();
@@ -40,8 +45,6 @@ async function bootstrap() {
       persistAuthorization: true, // 启用持久化
     },
   });
-  const env = process.env.NODE_ENV || "环境错误";
-  console.log(`🚀 ~ main.ts ~ 当前运行环境: ${env}`);
   await app.listen(3000);
 }
 bootstrap();
