@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { ChatModule } from "./chat/chat.module";
+console.log("🚀 ~ app.module.ts:11 ~ process.env.NODE_ENV:", process.env.NODE_ENV);
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: [`.env.${process.env.NODE_ENV}`] }),
