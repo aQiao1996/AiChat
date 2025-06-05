@@ -10,7 +10,7 @@ import viteCompression from "vite-plugin-compression";
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd());
   return {
-    base: "/", // 基础公共路径
+    base: "/ai-chat", // 基础公共路径
     resolve: {
       alias: {
         // 别名配置
