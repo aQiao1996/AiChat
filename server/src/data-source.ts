@@ -1,6 +1,6 @@
-const { DataSource } = require("typeorm");
+import { DataSource } from "typeorm";
 
-const AppDataSource = new DataSource({
+const dataSource = new DataSource({
   type: "mysql",
   host: "localhost",
   port: 3306,
@@ -10,9 +10,6 @@ const AppDataSource = new DataSource({
   entities: ["entity/*.js"],
   migrations: ["/migrations/*{.ts,.js}"],
   migrationsTableName: "typeorm_migrations",
-  cli: {
-    migrationsDir: "migration",
-  },
 });
 
-module.exports = { AppDataSource };
+export default dataSource;
