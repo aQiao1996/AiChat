@@ -9,7 +9,7 @@ const loadEntities = () => {
 
 const AppDataSource = new DataSource({
   type: 'mysql',
-  host: 'location',
+  host: 'localhost',
   port: 3306,
   username: 'root',
   password: '0JDT001AR@yyq',
