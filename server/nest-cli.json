@@ -3,6 +3,18 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "plugins": [
+      {
+        "name": "@nestjs/typeorm/plugin",
+        "options": {
+          "entities": ["src/**/*.entity{.ts,.js}"],
+          "migrations": ["src/migrations/**/*{.ts,.js}"],
+          "cli": {
+            "migrationsDir": "src/migrations"
+          }
+        }
+      }
+    ]
   }
 }
