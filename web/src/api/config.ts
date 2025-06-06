@@ -312,7 +312,7 @@ function showLoading() {
     dom.style.left = "0";
     dom.style.width = "100%";
     dom.style.height = "100%";
-    dom.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    // dom.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
     dom.style.display = "flex";
     dom.style.justifyContent = "center";
     dom.style.alignItems = "center";
