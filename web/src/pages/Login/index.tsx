@@ -6,6 +6,7 @@ import AvatarImage from "@/assets/images/avatar.png";
 import { useAppDispatch } from "@/store";
 import { login, setToken } from "@/store/modules/user";
 import { useNavigate } from "react-router-dom";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import type { ILoginParams } from "@/api/login";
 
 type LoginType = "account";
@@ -18,6 +19,7 @@ const Page = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   /**
    * 处理登录表单提交
@@ -26,7 +28,15 @@ const Page = () => {
    * @description 执行登录操作，成功后设置token并跳转到首页，失败则显示错误信息
    */
   const onFinish = async (values: ILoginParams) => {
+    if (!executeRecaptcha) {
+      return messageApi.error("reCAPTCHA 未加载完成");
+    }
     try {
+      // 调用 reCAPTCHA 获取 token
+      const captchaToken = await executeRecaptcha("login"); // "login" 是 action 名称（自定义）
+      if (!captchaToken) {
+        return messageApi.error("人机验证失败");
+      }
       const { data } = await dispatch(login(values)).unwrap();
       dispatch(setToken(data.token));
       messageApi.success("登录成功");
