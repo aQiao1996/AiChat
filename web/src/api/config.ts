@@ -214,13 +214,15 @@ const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
+    console.log("🚀 ~ config.ts:217 ~ response:", response);
 
     clearTimeout(timeoutId);
 
-    // 处理非JSON响应
+    // 处理非 JSON 响应
     if (!response.headers.get("content-type")?.includes("application/json")) {
-      const text = await response.text();
-      return text as unknown as ApiResponse<T>;
+      // const text = await response.text();
+      // return text as unknown as ApiResponse<T>;
+      await response.text();
     }
 
     // 检查状态
