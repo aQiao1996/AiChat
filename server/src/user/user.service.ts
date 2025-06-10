@@ -59,7 +59,9 @@ export class UserService {
     }
 
     const secretKey = this.configService.get<string>("RECAPTCHA_SITE_KEY");
-    const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
+    // const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
+    // 国内 www.recaptcha.net
+    const url = `https://www.recaptcha.net/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
 
     try {
       const response = await axios.post(url, null, {
