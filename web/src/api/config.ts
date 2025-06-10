@@ -168,9 +168,10 @@ const responseInterceptor = <T>(response: ApiResponse<T>) => {
 const errorHandler = (error: any): never => {
   if (isApiError(error)) {
     if (error.response) {
-      switch (error.response.code) {
+      const response = error.response;
+      switch (response.code) {
         case 400:
-          antdMessage.open({ content: "请求错误", type: "error" });
+          antdMessage.open({ content: response.message || "请求错误", type: "error" });
           break;
         case 401:
           antdMessage.open({ content: "未授权，请登录", type: "error" });
@@ -179,16 +180,16 @@ const errorHandler = (error: any): never => {
           // window.location.href = "/login";
           break;
         case 403:
-          antdMessage.open({ content: "拒绝访问", type: "error" });
+          antdMessage.open({ content: `拒绝访问 ${response.message || ""}`, type: "error" });
           break;
         case 404:
-          antdMessage.open({ content: `请求地址出错: ${error.response.path || ""}`, type: "error" });
+          antdMessage.open({ content: `请求地址出错: ${response.path || ""}`, type: "error" });
           break;
         case 500:
-          antdMessage.open({ content: "服务器内部错误", type: "error" });
+          antdMessage.open({ content: response.message || "服务器内部错误", type: "error" });
           break;
         default:
-          antdMessage.open({ content: `连接错误 ${error.response.code}`, type: "error" });
+          antdMessage.open({ content: `连接错误 ${response.code}`, type: "error" });
       }
     } else {
       if (error.message.includes("timeout")) {

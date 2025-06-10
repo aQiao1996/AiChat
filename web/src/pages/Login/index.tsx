@@ -1,13 +1,13 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { LoginFormPage, ProConfigProvider, ProFormText } from "@ant-design/pro-components";
 import { message, Tabs, theme, type TabsProps } from "antd";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import AvatarImage from "@/assets/images/avatar.png";
 import { useAppDispatch } from "@/store";
 import { login, setToken } from "@/store/modules/user";
 import { useNavigate } from "react-router-dom";
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import type { ILoginParams } from "@/api/login";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { verifyRecaptchaApi, type ILoginParams } from "@/api/login";
 
 type LoginType = "account";
 
@@ -21,6 +21,16 @@ const Page = () => {
   const navigate = useNavigate();
   const { executeRecaptcha } = useGoogleReCaptcha();
 
+  const handleReCaptchaVerify = useCallback(async () => {
+    if (!executeRecaptcha) {
+      console.log("reCAPTCHA 未加载完成");
+      return;
+    }
+    // 调用 reCAPTCHA 获取 token
+    const captchaToken = await executeRecaptcha("login"); // "login" 是 action 名称（自定义）
+    await verifyRecaptchaApi(captchaToken, "login");
+  }, [executeRecaptcha]);
+
   /**
    * 处理登录表单提交
    * @param values 登录表单参数
@@ -28,24 +38,13 @@ const Page = () => {
    * @description 执行登录操作，成功后设置token并跳转到首页，失败则显示错误信息
    */
   const onFinish = async (values: ILoginParams) => {
-    if (!executeRecaptcha) {
-      return messageApi.error("reCAPTCHA 未加载完成");
-    }
-    try {
-      // 调用 reCAPTCHA 获取 token
-      const captchaToken = await executeRecaptcha("login"); // "login" 是 action 名称（自定义）
-      if (!captchaToken) {
-        return messageApi.error("人机验证失败");
-      }
-      const { data } = await dispatch(login(values)).unwrap();
-      dispatch(setToken(data.token));
-      messageApi.success("登录成功");
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
-    } catch (error: any) {
-      messageApi.error(error.message || "未知错误");
-    }
+    await handleReCaptchaVerify();
+    const { data } = await dispatch(login(values)).unwrap();
+    dispatch(setToken(data.token));
+    messageApi.success("登录成功");
+    setTimeout(() => {
+      navigate("/home");
+    }, 1000);
   };
 
   return (
@@ -100,7 +99,9 @@ const Page = () => {
 export default () => {
   return (
     <ProConfigProvider dark>
-      <Page />
+      <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_APP_GOOGLE_RECAPTCHA_SITE_KEY}>
+        <Page />
+      </GoogleReCaptchaProvider>
     </ProConfigProvider>
   );
 };
