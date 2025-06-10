@@ -8,13 +8,15 @@ import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
+import { Logger } from "@nestjs/common";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly user: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly logger: Logger
   ) {}
   // * 登录
   async login(createUserDto: CreateUserDto) {
@@ -53,42 +55,44 @@ export class UserService {
     return null;
   }
   // * 验证 reCAPTCHA
- async verifyRecaptcha(token: string, action?: string) {
-  if (!token) {
-    throw new HttpException("reCAPTCHA token is required", HttpStatus.FORBIDDEN);
-  }
+  async verifyRecaptcha(token: string, action?: string) {
+    if (!token) {
+      throw new HttpException("reCAPTCHA token is required", HttpStatus.FORBIDDEN);
+    }
 
-  const secretKey = this.configService.get<string>("RECAPTCHA_SITE_KEY");
-  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
-  
-  try {
-    const response = await axios.post(url);
-    const googleResponse = response.data;
-    
-    if (!googleResponse.success) {
+    const secretKey = this.configService.get<string>("RECAPTCHA_SITE_KEY");
+    const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
+
+    try {
+      const response = await axios.post(url, null, {
+        timeout: 10000,
+      });
+      const googleResponse = response.data;
+
+      if (!googleResponse.success) {
+        throw new HttpException(
+          `reCAPTCHA verification failed: ${googleResponse["error-codes"]}`,
+          HttpStatus.FORBIDDEN
+        );
+      }
+
+      // 检查分数阈值（通常0.5以上认为是人类）
+      if (googleResponse.score < 0.5) {
+        throw new HttpException("reCAPTCHA score too low", HttpStatus.FORBIDDEN);
+      }
+
+      // 检查action是否匹配（如果有提供action参数）
+      if (action && googleResponse.action !== action) {
+        throw new HttpException("reCAPTCHA action mismatch", HttpStatus.FORBIDDEN);
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error(error);
       throw new HttpException(
-        `reCAPTCHA verification failed: ${googleResponse["error-codes"]}`,
-        HttpStatus.FORBIDDEN
+        error.message || "reCAPTCHA verification error",
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
-
-    // 检查分数阈值（通常0.5以上认为是人类）
-    if (googleResponse.score < 0.5) {
-      throw new HttpException("reCAPTCHA score too low", HttpStatus.FORBIDDEN);
-    }
-
-    // 检查action是否匹配（如果有提供action参数）
-    if (action && googleResponse.action !== action) {
-      throw new HttpException("reCAPTCHA action mismatch", HttpStatus.FORBIDDEN);
-    }
-
-    return true;
-  } catch (error) {
-    console.log("🚀 ~ user.service.ts:87 ~ verifyRecaptcha ~ error:", error);
-    throw new HttpException(
-      error.message || "reCAPTCHA verification error",
-      error.status || HttpStatus.INTERNAL_SERVER_ERROR
-    );
   }
-}
 }
