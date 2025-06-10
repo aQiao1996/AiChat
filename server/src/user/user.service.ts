@@ -84,6 +84,7 @@ export class UserService {
 
     return true;
   } catch (error) {
+    console.log("🚀 ~ user.service.ts:87 ~ verifyRecaptcha ~ error:", error);
     throw new HttpException(
       error.message || "reCAPTCHA verification error",
       error.status || HttpStatus.INTERNAL_SERVER_ERROR
