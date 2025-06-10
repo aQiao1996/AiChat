@@ -15,8 +15,7 @@ export class UserService {
   constructor(
     @InjectRepository(User) private readonly user: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly logger: Logger
+    private readonly configService: ConfigService
   ) {}
   // * 登录
   async login(createUserDto: CreateUserDto) {
@@ -88,7 +87,8 @@ export class UserService {
 
       return true;
     } catch (error) {
-      this.logger.error(error);
+      const logger = new Logger("🚀 ~ user.service.ts ~ verifyRecaptcha");
+      logger.error(error);
       throw new HttpException(
         error.message || "reCAPTCHA verification error",
         error.status || HttpStatus.INTERNAL_SERVER_ERROR
