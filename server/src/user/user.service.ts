@@ -8,7 +8,6 @@ import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
-import { Logger } from "@nestjs/common";
 
 @Injectable()
 export class UserService {
@@ -87,8 +86,7 @@ export class UserService {
 
       return true;
     } catch (error) {
-      const logger = new Logger("🚀 ~ user.service.ts ~ verifyRecaptcha");
-      logger.error(error);
+      console.log("🚀 ~ user.service.ts:97 ~ verifyRecaptcha ~ error:", error);
       throw new HttpException(
         error.message || "reCAPTCHA verification error",
         error.status || HttpStatus.INTERNAL_SERVER_ERROR
