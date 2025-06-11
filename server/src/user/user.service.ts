@@ -60,7 +60,7 @@ export class UserService {
 
     const secretKey = this.configService.get<string>("RECAPTCHA_SITE_KEY");
     // const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
-    // 国内 www.recaptcha.net
+    // 国内 www.recaptcha.net  https://developers.google.com/recaptcha/docs/faq?hl=zh-cn
     const url = `https://www.recaptcha.net/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`;
 
     try {
