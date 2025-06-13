@@ -21,14 +21,27 @@ const Page = () => {
   const navigate = useNavigate();
   const { executeRecaptcha } = useGoogleReCaptcha();
 
+  /**
+   * 处理 reCAPTCHA 验证
+   * @returns 验证结果
+   * @throws 当验证失败时抛出错误信息
+   * @description 调用 reCAPTCHA 进行验证，成功后返回 true，失败则返回 false
+   */
   const handleReCaptchaVerify = useCallback(async () => {
     if (!executeRecaptcha) {
       console.log("reCAPTCHA 未加载完成");
-      return;
+      return false;
     }
-    // 调用 reCAPTCHA 获取 token
-    const captchaToken = await executeRecaptcha("login"); // "login" 是 action 名称（自定义）
-    await verifyRecaptchaApi(captchaToken, "login");
+    try {
+      // 调用 reCAPTCHA 获取 token
+      const captchaToken = await executeRecaptcha("login"); // "login" 是 action 名称（自定义）
+      await verifyRecaptchaApi(captchaToken, "login");
+      return true;
+    } catch (error) {
+      console.error("reCAPTCHA 验证失败", error);
+      messageApi.error("reCAPTCHA 验证失败，请重试");
+      return false;
+    }
   }, [executeRecaptcha]);
 
   /**
@@ -38,7 +51,8 @@ const Page = () => {
    * @description 执行登录操作，成功后设置token并跳转到首页，失败则显示错误信息
    */
   const onFinish = async (values: ILoginParams) => {
-    await handleReCaptchaVerify();
+    const isVerified = await handleReCaptchaVerify();
+    if (!isVerified) return;
     const { data } = await dispatch(login(values)).unwrap();
     dispatch(setToken(data.token));
     messageApi.success("登录成功");
