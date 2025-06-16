@@ -113,6 +113,7 @@ const Page = () => {
 export default () => {
   return (
     <ProConfigProvider dark>
+      {/* 谷歌人机验证 v3 */}
       <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_APP_GOOGLE_RECAPTCHA_SITE_KEY}>
         <Page />
       </GoogleReCaptchaProvider>
