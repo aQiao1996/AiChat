@@ -11,7 +11,11 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService
   ) {}
-  // * 验证token
+
+  /**
+   * 验证token
+   * @description 验证token
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // 是否公共路由
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -29,7 +33,11 @@ export class AuthGuard implements CanActivate {
     }
     return true;
   }
-  // * 从标头提取令牌
+  
+  /**
+   * 从标头提取令牌
+   * @description 从标头提取令牌
+   */
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
     return type === "Bearer" ? token : undefined;

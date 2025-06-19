@@ -16,7 +16,11 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService
   ) {}
-  // * 登录
+
+  /**
+   * 登录
+   * @description 登录
+   */
   async login(createUserDto: CreateUserDto) {
     const user = await this.user.findOne({
       select: ["username", "id", "password"], // 查询的字段 不然默认全部
@@ -29,7 +33,11 @@ export class UserService {
     const token = await this.jwtService.signAsync({ ...user });
     return { ...user, token };
   }
-  // * 注册
+
+  /**
+   * 注册
+   * @description 注册
+   */
   async register(createUserDto: CreateUserDto) {
     const user = await this.user.findOne({ where: { username: createUserDto.username } });
     if (user) throw new HttpException("用户名重复", HttpStatus.BAD_REQUEST);
@@ -37,7 +45,11 @@ export class UserService {
     await this.user.save({ username: createUserDto.username, password: newPwd });
     return null;
   }
-  // * 更新用户信息
+
+  /**
+   * 更新用户信息
+   * @description 更新用户信息
+   */
   async updata(updateUserDto: UpdateUserDto) {
     const { id, newPassword, oldPassword } = updateUserDto;
     const user = await this.user.findOne({
@@ -52,7 +64,11 @@ export class UserService {
     // await this.user.update(id, { password: newPwd });
     return null;
   }
-  // * 验证 reCAPTCHA
+
+  /**
+   * 验证 reCAPTCHA
+   * @description 验证 reCAPTCHA
+   */
   async verifyRecaptcha(token: string, action?: string) {
     if (!token) {
       throw new HttpException("reCAPTCHA token is required", HttpStatus.FORBIDDEN);
