@@ -73,6 +73,7 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
                 </SyntaxHighlighter>
               </div>
             ) : (
+              // 如果不是代码块则直接渲染 code 标签
               <code {...props} className={className}>
                 {children}
               </code>
