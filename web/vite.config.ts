@@ -4,13 +4,13 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import viteImagemin from "vite-plugin-imagemin";
 import viteCompression from "vite-plugin-compression";
-import { visualizer } from "rollup-plugin-visualizer";
+// import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd());
   return {
-    base: "/", // 基础公共路径
+    base: "/ai-chat", // 基础公共路径
     resolve: {
       alias: {
         // 别名配置
@@ -38,9 +38,9 @@ export default defineConfig(({ mode, command }) => {
     plugins: [
       react(),
       tailwindcss(),
-      visualizer({
-        open: false, // 依赖分析,不自动打开页面
-      }),
+      // visualizer({
+      //   open: false, // 依赖分析,不自动打开页面
+      // }),
       // 图片压缩
       viteImagemin({
         verbose: true, // 是否在控制台输出压缩结果

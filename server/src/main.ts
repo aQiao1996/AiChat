@@ -13,7 +13,6 @@ async function bootstrap() {
   // * 环境日志
   // const logger = new Logger("main.ts");
   // logger.log(`🚀 ~ main.ts ~ 当前运行环境: ${process.env.NODE_ENV || "环境错误"}`, process.env.DATABASE_NAME);
-  console.log(`🚀 ~ main.ts ~ 当前运行环境: ${process.env.NODE_ENV || "环境错误"}`, process.env.DATABASE_NAME);
   // * 使用 express 作为默认框架
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true, // cors 处理跨域 或者直接 app.enableCors();
@@ -47,6 +46,9 @@ async function bootstrap() {
   });
   await app.listen(process.env.PORT || 3000, () => {
     console.log(`🚀 ~ main.ts ~ 启动成功,端口号: ${process.env.PORT}`);
+    console.log(`🚀 ~ main.ts ~ 当前运行环境: ${process.env.NODE_ENV || "环境错误"}`);
+    console.log(`🚀 ~ main.ts ~ 当前数据库类型: ${process.env.DATABASE_TYPE || "数据库类型错误"}`);
+    console.log(`🚀 ~ main.ts ~ 当前数据库名称: ${process.env.DATABASE_NAME || "数据库名称错误"}`);
   });
 }
 bootstrap();

@@ -64,11 +64,31 @@ const defaultOptions: FetchOptions = {
 /**
  * 检查响应状态
  */
-const checkStatus = async (response: Response): Promise<Response> => {
-  if (response.ok) return response;
-  const errRes = await response.clone().json();
-  const error = new Error(errRes.message) as ApiError;
-  error.response = errRes;
+// const checkStatus = async (response: Response): Promise<Response> => {
+//   if (response.ok) return response;
+//   const errRes = await response.clone().json();
+//   const error = new Error(errRes.message) as ApiError;
+//   error.response = errRes;
+//   throw error;
+// };
+const checkStatus = async (response: Response) => {
+  if (response.ok) return; // 2xx 状态码直接放行
+
+  // 统一处理错误
+  let errorPayload: any;
+  const contentType = response.headers.get("content-type");
+  const responseClone = response.clone();
+
+  try {
+    errorPayload = contentType?.includes("application/json") ? await responseClone.json() : await responseClone.text();
+  } catch {
+    errorPayload = `Failed to parse error response (status ${responseClone.status})`;
+  }
+
+  // 构造包含详细信息的错误对象
+  const error = new Error(`HTTP ${response.status} ${response.statusText}`) as any;
+  error.response = errorPayload;
+
   throw error;
 };
 
@@ -148,9 +168,10 @@ const responseInterceptor = <T>(response: ApiResponse<T>) => {
 const errorHandler = (error: any): never => {
   if (isApiError(error)) {
     if (error.response) {
-      switch (error.response.code) {
+      const response = error.response;
+      switch (response.code) {
         case 400:
-          antdMessage.open({ content: "请求错误", type: "error" });
+          antdMessage.open({ content: response.message || "请求错误", type: "error" });
           break;
         case 401:
           antdMessage.open({ content: "未授权，请登录", type: "error" });
@@ -159,22 +180,22 @@ const errorHandler = (error: any): never => {
           // window.location.href = "/login";
           break;
         case 403:
-          antdMessage.open({ content: "拒绝访问", type: "error" });
+          antdMessage.open({ content: `拒绝访问 ${response.message || ""}`, type: "error" });
           break;
         case 404:
-          antdMessage.open({ content: `请求地址出错: ${error.response.path || ""}`, type: "error" });
+          antdMessage.open({ content: `请求地址出错: ${response.path || ""}`, type: "error" });
           break;
         case 500:
-          antdMessage.open({ content: "服务器内部错误", type: "error" });
+          antdMessage.open({ content: response.message || "服务器内部错误", type: "error" });
           break;
         default:
-          antdMessage.open({ content: `连接错误 ${error.response.code}`, type: "error" });
+          antdMessage.open({ content: `连接错误 ${response.code}`, type: "error" });
       }
     } else {
       if (error.message.includes("timeout")) {
         antdMessage.open({ content: "请求超时", type: "error" });
       } else {
-        antdMessage.open({ content: "网络异常，请检查网络连接", type: "error" });
+        antdMessage.open({ content: "网络异常，请联系管理员", type: "error" });
       }
     }
   } else if (error instanceof TypeError) {
@@ -216,12 +237,6 @@ const fetchRequest = async <T>(url: string, options: FetchOptions = {}): Promise
     });
 
     clearTimeout(timeoutId);
-
-    // 处理非JSON响应
-    if (!response.headers.get("content-type")?.includes("application/json")) {
-      const text = await response.text();
-      return text as unknown as ApiResponse<T>;
-    }
 
     // 检查状态
     await checkStatus(response);
@@ -312,7 +327,7 @@ function showLoading() {
     dom.style.left = "0";
     dom.style.width = "100%";
     dom.style.height = "100%";
-    dom.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    // dom.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
     dom.style.display = "flex";
     dom.style.justifyContent = "center";
     dom.style.alignItems = "center";

@@ -17,6 +17,7 @@ interface ICodeProps extends React.HTMLAttributes<HTMLElement> {
 const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
   const { prism } = useAppSelector(state => state.syntaxHighlighter);
   const [themeStyle, setThemeStyle] = useState<{ [key: string]: CSSProperties }>();
+
   /**
    * 异步获取代码高亮主题样式
    * 从 react-syntax-highlighter 库中导入指定的 prism 主题
@@ -31,9 +32,11 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
       console.error("Failed to load theme:", error);
     }
   };
+
   useEffect(() => {
     getThemeStyle();
   }, [prism]);
+
   return (
     <div className="markdown-content prose max-w-none">
       <ReactMarkdown
@@ -45,12 +48,14 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
             const match = /language-(\w+)/.exec(className || "");
             return match ? (
               <div className="code-block relative group">
+                {/* 复制到剪贴板 */}
                 <CopyToClipboard text={String(children).trim()}>
                   <div className="absolute right-4 top-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <CopyOutlined className="w-4 h-4" />
                     <span className="text-sm">复制</span>
                   </div>
                 </CopyToClipboard>
+                {/* 语法高亮 */}
                 <SyntaxHighlighter
                   {...props}
                   language={match[1]}
@@ -68,6 +73,7 @@ const MarkdownRenderer = ({ markdown }: IMarkdownRendererProps) => {
                 </SyntaxHighlighter>
               </div>
             ) : (
+              // 如果不是代码块则直接渲染 code 标签
               <code {...props} className={className}>
                 {children}
               </code>

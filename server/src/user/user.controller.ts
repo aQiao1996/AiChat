@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, UseGuards } from "@nestjs/common";
+import { Controller, Post, Body, Patch } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -35,5 +35,32 @@ export class UserController {
   @ApiBearerAuth()
   updata(@Body() updateUserDto: UpdateUserDto) {
     return this.userService.updata(updateUserDto);
+  }
+  // * 验证 reCAPTCHA
+  @Post("/recaptcha")
+  @Public(true)
+  @ApiOperation({ summary: "验证 reCAPTCHA", description: "验证客户端提交的 reCAPTCHA token" })
+  @ApiResponse({ status: 200, description: "验证成功" })
+  @ApiBody({
+    description: "reCAPTCHA 验证请求体",
+    schema: {
+      type: "object",
+      properties: {
+        token: {
+          type: "string",
+          description: "从客户端获取的 reCAPTCHA token",
+          example: "your_recaptcha_token_here",
+        },
+        action: {
+          type: "string",
+          description: "reCAPTCHA 动作名称(可选)",
+          example: "login",
+        },
+      },
+      required: ["token"],
+    },
+  })
+  recaptcha(@Body() body: { token: string; action?: string }) {
+    return this.userService.verifyRecaptcha(body.token, body.action);
   }
 }
