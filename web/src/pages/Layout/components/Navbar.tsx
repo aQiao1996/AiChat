@@ -3,6 +3,7 @@ import { Avatar, Divider, Dropdown, Input, message, Modal, type MenuProps } from
 import { useAppSelector, useAppDispatch } from "@/store";
 import AvatarImage from "@/assets/images/avatar.png";
 import { MessageOutlined, MoreOutlined } from "@ant-design/icons";
+import MenuIcon from "./MenuIcon";
 import {
   updateMessages,
   setTitle,
@@ -155,11 +156,16 @@ const Navbar = () => {
 
       <div className="p-24">
         {/*  */}
-        <div className="h-100">
-          <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
-            胖虎
-          </Avatar>
-          <span className="ml-8 font-bold text-18">胖虎</span>
+        <div className="h-100 flex items-center">
+          <div className="flex-1">
+            <Avatar style={{ verticalAlign: "middle" }} size="large" src={AvatarImage}>
+              胖虎
+            </Avatar>
+            <span className="ml-8 font-bold text-18">胖虎</span>
+          </div>
+          {/* <div>
+            <MenuIcon />
+          </div> */}
         </div>
         <Divider />
         {/*  */}
