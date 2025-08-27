@@ -1,0 +1,50 @@
+{
+  // * 这里的规则可以参考 TS 的文档：https://www.tslang.cn/docs/handbook/module-resolution.html
+  "compilerOptions": {
+    "baseUrl": "./", // 解析非相对模块的基地址,会使用 baseUrl 选项作为url路径,默认是当前目录
+    "target": "es5", // 目标语言版本
+    "lib": ["dom", "dom.iterable", "esnext"], // ts需要引用的库,即声明文件
+    // "outDir": "./dist", // 指定输出目录
+    // "rootDir": "./", // 制定输出文件目录(用于输出),用于控制输出目录结构
+    // "allowJs": true, // 运行编译器编译js、jsx文件,可以混合
+    // "checkJs": false, // 允许在js文件中报错,通常与 allowJs 一起使用
+    // "declaration": false, // 生成声明文件,开启后会自动生成声明文件
+    // "declarationDir": "", // 指定生成声明文件存放目录
+    // "emitDeclarationOnly": false, // 只生成声明文件,而不会生成js文件
+    // "sourceMap": false, // 生成目标文件的 sourceMap 文件
+    // "declarationMap": false, // 为声明文件生成 sourceMap
+    // "removeComments": false, // 删除注释
+    "skipLibCheck": true, // 跳过所有声明文件（.d.ts 文件）的类型检查 加快大型项目编译速度
+    "esModuleInterop": true, // 允许默认导入与 CommonJS（CJS）模块互操作
+    "allowSyntheticDefaultImports": true, // 与 esModuleInterop 配合使用,允许从不使用 ES6 模块语法的模块中默认导入,主要适用于那些只导出单个对象的 CommonJS 模块
+    "strict": true, // 严格模式
+    // "alwaysStrict": true, // 在代码中注入 'use strict'
+    // "strictNullChecks": false, // 不允许把 null、undefined 赋值给其他类型的变量
+    // "strictFunctionTypes": false, // 不允许函数参数双向协变
+    // "strictBindCallApply": false, // 严格的 bind、call、apply 检查
+    // "strictPropertyInitialization": false, // 类的实例属性必须初始化
+    // "noImplicitAny": true, // 不允许隐式的any类型
+    "forceConsistentCasingInFileNames": true, // 强制在文件名中保持一致的大小写
+    "noFallthroughCasesInSwitch": true, // 防止 switch 语句贯穿(即如果没有 break 语句后面不会执行)
+    "module": "esnext", // 生成代码的模板标准
+    "moduleResolution": "node", // 模块解析策略,ts默认用 node 的解析策略,即相对的方式导入
+    // "noUnusedLocals": false, // 检查只声明、未使用的局部变量(只提示不报错)
+    // "noUnusedParameters": false, // 检查未使用的函数参数(只提示不报错)
+    "resolveJsonModule": true, // 启用对 JSON 文件的导入支持
+    "isolatedModules": true, // 确保每个 TypeScript 文件都可以独立编译，而不依赖于其他文件
+    "noEmit": true, // 不输出文件,即编译后不会生成任何js文件
+    // "noEmitOnError": false, // 错误时不输出任何文件
+    "jsx": "react-jsx", // jsx 解析器
+    // 路径映射,相对于 baseUrl
+    "paths": {
+      "@/*": ["src/*"],
+      "api/*": ["src/api/*"] // 代表遇到 import {} from "api/*" 时，就从 src/api/* 中引入
+    }
+  },
+  // 指定一个匹配列表(属于自动指定该路径下的所有ts相关文件)
+  "include": ["src"]
+  // 指定一个排除列表(include的反向操作)
+  // "exclude": []
+  // 指定哪些文件使用该配置(需要手动一个个指定文件)
+  // "files": []
+}
