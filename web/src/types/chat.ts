@@ -4,4 +4,4 @@ export interface IMessage {
   reasoningContent?: string; // 思考内容
   reasoningTime?: number | string; // 思考用时
 }
-export type IModel = "deepseek-v3" | "deepseek-r1";
+export type IModel = "deepseek-v3" | "deepseek-r1" | undefined;

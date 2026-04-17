@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import OpenAI from "openai";
 import { Subject, Observable } from "rxjs";
@@ -11,6 +10,7 @@ import { User } from "src/user/entities/user.entity";
 import type { Repository } from "typeorm";
 import type { Request } from "express";
 import type { CreateChatDto, ChatMessageDto } from "./dto/create-chat.dto";
+import { AIService, type ChatModel, type DeepseekModel } from "src/ai/ai.service";
 
 // 扩展 Delta 类型定义
 interface Delta {
@@ -22,29 +22,13 @@ interface Delta {
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name); // 直接调用
-  private openai: OpenAI;
   constructor(
     @InjectRepository(Chat) private readonly chat: Repository<Chat>,
     @InjectRepository(Message) private readonly message: Repository<Message>,
     @InjectRepository(User) private readonly user: Repository<User>,
-    private readonly configService: ConfigService
+    private readonly aiService: AIService
   ) {}
 
-  /**
-   * 创建聊天服务实例
-   * 初始化 OpenAI 配置,设置 API 密钥和基础 URL
-   * @returns Promise<void> 返回一个 Promise,resolve 为 null
-   */
-  async createChat() {
-    return new Promise(resolve => {
-      const openai = new OpenAI({
-        apiKey: this.configService.get("DATABASE_DASHSCOPE_API_KEY"),
-        baseURL: this.configService.get("DATABASE_DASHSCOPE_API_URL"),
-      });
-      this.openai = openai;
-      resolve(null);
-    });
-  }
   /**
    * 创建聊天流式响应
    *
@@ -61,7 +45,7 @@ export class ChatService {
    * - 解析并发送思考过程和回答内容
    * - 错误处理和资源清理
    */
-  async createChatStream(chatId: number, model: "deepseek-v3" | "deepseek-r1") {
+  async createChatStream(chatId: number, model?: DeepseekModel) {
     const subject = new Subject<{
       type: "reasoning" | "answer" | "complete";
       content?: string;
@@ -92,11 +76,14 @@ export class ChatService {
       // 计算 tokens
       const tokenizer = get_encoding("cl100k_base"); // 通用编码
       // https://bailian.console.aliyun.com/?tab=api#/api/?type=model&url=https%3A%2F%2Fhelp.aliyun.com%2Fdocument_detail%2F2868565.html
-      const MAX_TOKENS_MAP = {
+      const MAX_TOKENS_MAP: Record<ChatModel, number> = {
+        "gpt-5.4": 8192,
         "deepseek-v3": 4096, // 合理范围：4096-8192（保守取4096）
         "deepseek-r1": 8192, // 合理范围：8192-16384（保守取8192）
       };
-      const maxTokens = MAX_TOKENS_MAP[model];
+      // 未显式指定模型时,默认走自定义 AI
+      const chatConfig = this.aiService.getChatConfig(model);
+      const maxTokens = MAX_TOKENS_MAP[chatConfig.model];
 
       // 计算当前 Token 数量
       let currentTokens = 0;
@@ -118,16 +105,20 @@ export class ChatService {
         validMessages.push({ role: "user", content: "" });
       }
 
-      if (!this.openai) {
-        await this.createChat();
-      }
       const messages = validMessages;
 
-      const stream = await this.openai.chat.completions.create({
-        model,
+      // 根据 provider 组装统一的流式请求参数
+      const requestBody: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+        model: chatConfig.model,
         messages,
         stream: true,
-      });
+      };
+
+      if (chatConfig.reasoningEffort) {
+        requestBody.reasoning_effort = chatConfig.reasoningEffort;
+      }
+
+      const stream = await chatConfig.client.chat.completions.create(requestBody);
 
       // AbortController 超时控制
       const abortController = new AbortController();
@@ -222,9 +213,6 @@ export class ChatService {
    * @throws 如果 OpenAI 服务未初始化或API调用失败
    */
   async getDialogueTitle(messages: ChatMessageDto) {
-    if (!this.openai) {
-      await this.createChat();
-    }
     // 动态注入提示词
     const promptMessages: ChatMessageDto[] = [
       {
@@ -244,10 +232,18 @@ export class ChatService {
           "- 避免模糊词汇（如'问题'、'错误'），尽量具体（如'数组越界异常处理'）",
       },
     ];
-    const completion = await this.openai.chat.completions.create({
-      model: "deepseek-v3",
+    // 标题生成统一复用默认自定义 AI
+    const chatConfig = this.aiService.getDefaultChatConfig();
+    const requestBody: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+      model: chatConfig.model,
       messages: promptMessages,
-    });
+    };
+
+    if (chatConfig.reasoningEffort) {
+      requestBody.reasoning_effort = chatConfig.reasoningEffort;
+    }
+
+    const completion = await chatConfig.client.chat.completions.create(requestBody);
     const title = completion.choices[0].message.content;
     return title;
   }

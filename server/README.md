@@ -24,12 +24,32 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+NestJS server for the chat app. The default AI route now uses a custom OpenAI-compatible endpoint with `gpt-5.4` and low reasoning effort. DeepSeek is still available as an explicit fallback when the frontend passes `deepseek-v3` or `deepseek-r1`.
 
 ## Project setup
 
 ```bash
 $ npm install
+```
+
+## Environment
+
+Copy `server/.env.example` to your runtime env file such as `server/.env.development` or `server/.env.production`, then fill in the values.
+
+Required for the default custom AI route:
+
+```bash
+OPENAI_COMPATIBLE_API_KEY=your-openai-compatible-api-key
+OPENAI_COMPATIBLE_BASE_URL=https://your-openai-compatible-endpoint/v1
+OPENAI_COMPATIBLE_MODEL=gpt-5.4
+OPENAI_COMPATIBLE_REASONING_EFFORT=low
+```
+
+Optional DeepSeek fallback:
+
+```bash
+DATABASE_DASHSCOPE_API_KEY=your-dashscope-api-key
+DATABASE_DASHSCOPE_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
 
 ## Compile and run the project

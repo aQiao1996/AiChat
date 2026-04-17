@@ -78,12 +78,16 @@ const Home = () => {
    * - 错误处理
    */
   const createChatStream = (params: IStreamParams) => {
-    const eventSource = new EventSourcePolyfill(
-      `${import.meta.env.VITE_APP_BASE_URL}/chat/chatStream?chatId=${params.chatId}&model=${
-        params.model || "deepseek-v3"
-      }`,
-      { headers: { Authorization: "Bearer " + token } }
-    );
+    // 默认不传 model,由后端路由到自定义 AI
+    const streamUrl = new URL(`${import.meta.env.VITE_APP_BASE_URL}/chat/chatStream`, window.location.origin);
+    streamUrl.searchParams.set("chatId", String(params.chatId));
+    if (params.model) {
+      streamUrl.searchParams.set("model", params.model);
+    }
+
+    const eventSource = new EventSourcePolyfill(streamUrl.toString(), {
+      headers: { Authorization: "Bearer " + token },
+    });
     setEventSource(eventSource);
 
     let reasoningResult = ""; // 思考

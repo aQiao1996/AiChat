@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "./user/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { ChatModule } from "./chat/chat.module";
+import { AIModule } from "./ai/ai.module";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: [`.env.${process.env.NODE_ENV}`] }),
@@ -25,6 +26,7 @@ import { ChatModule } from "./chat/chat.module";
         autoLoadEntities: true, //如果为true,将自动加载实体 forFeature() 方法注册的每个实体都将自动添加到 entities 中
       }),
     }),
+    AIModule,
     UserModule,
     AuthModule,
     ChatModule,

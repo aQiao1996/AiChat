@@ -94,7 +94,8 @@ const MyInput = ({ sendMessage, eventSource, ref }: IMyInputProps) => {
   // 是否深度思考
   const handleDeepThinking = () => {
     const newDeepThinking = !deepThinking;
-    dispatch(updateModel(newDeepThinking ? "deepseek-r1" : "deepseek-v3"));
+    // 关闭深度思考时,恢复为未指定模型,交给后端默认路由
+    dispatch(updateModel(newDeepThinking ? "deepseek-r1" : undefined));
     setDeepThinking(newDeepThinking);
   };
   

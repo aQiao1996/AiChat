@@ -21,8 +21,8 @@ export class ChatController {
   @ApiQuery({ name: "chatId", required: true, description: "消息id", type: Number })
   @ApiQuery({
     name: "model",
-    required: true,
-    description: "模型名称",
+    required: false,
+    description: "模型名称,不传时默认走自定义 AI",
     type: "enum",
     enum: ["deepseek-v3", "deepseek-r1"],
   })

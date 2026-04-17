@@ -33,7 +33,7 @@ const initialState: IChatStore = {
       content: "Hi~ 我是`胖虎` 您身边的智能助手，可以为你答疑解惑、精读文档、尽情创作 让胖虎助您轻松工作，多点生活。",
     },
   ],
-  model: "deepseek-v3",
+  model: undefined,
   currentAnswer: "", // 当前回答
   currentReasoning: "", // 当前思考
   isLoading: false,
