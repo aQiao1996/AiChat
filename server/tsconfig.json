@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
-    "module": "commonjs", // 指定生成哪个模块系统代码
+    "module": "node16", // 指定生成哪个模块系统代码,使用非弃用的 Node16 模块模式
+    "moduleResolution": "node16", // 模块解析策略,使用非弃用的 Node16 解析策略
     "declaration": true, // 生成相应的'.d.ts'声明文件
     "removeComments": true, // 从输出文件中删除所有注释
     "emitDecoratorMetadata": true, // 为装饰器提供元数据支持
     "experimentalDecorators": true, // 启用实验性的装饰器支持
     "allowSyntheticDefaultImports": true, // 允许默认导入从没有设置默认导出的模块
-    "target": "ES5", // 指定ECMAScript目标版本
+    "target": "ES2020", // 指定ECMAScript目标版本,使用非弃用目标版本
     "sourceMap": true, // 生成相应的 '.map' 文件
-    "outDir": "./dist", // 指定输出目录
-    "baseUrl": "./", // 解析非相对模块名的基准目录
     "incremental": true, // 启用增量编译
     "skipLibCheck": true, // 跳过库文件的类型检查
     "strictNullChecks": false, // 在严格的null检查模式下编译
     "noImplicitAny": false, // 在表达式和声明上有隐含的'any'类型时报错
     "strictBindCallApply": false, // 在函数绑定、调用和应用时使用严格的类型检查
     "forceConsistentCasingInFileNames": false, // 禁止对同一个文件的不一致的大小写引用
-    "noFallthroughCasesInSwitch": false // 报告switch语句的case落空错误
+    "noFallthroughCasesInSwitch": false, // 报告switch语句的case落空错误
+    "paths": {
+      "src/*": ["./src/*"] // 兼容原有 src/* 绝对导入
+    }
   }
 }

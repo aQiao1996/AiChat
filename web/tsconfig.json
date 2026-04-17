@@ -1,8 +1,7 @@
 {
   // * 这里的规则可以参考 TS 的文档：https://www.tslang.cn/docs/handbook/module-resolution.html
   "compilerOptions": {
-    "baseUrl": "./", // 解析非相对模块的基地址,会使用 baseUrl 选项作为url路径,默认是当前目录
-    "target": "es5", // 目标语言版本
+    "target": "ES2020", // 目标语言版本,使用非弃用目标版本
     "lib": ["dom", "dom.iterable", "esnext"], // ts需要引用的库,即声明文件
     // "outDir": "./dist", // 指定输出目录
     // "rootDir": "./", // 制定输出文件目录(用于输出),用于控制输出目录结构
@@ -27,7 +26,7 @@
     "forceConsistentCasingInFileNames": true, // 强制在文件名中保持一致的大小写
     "noFallthroughCasesInSwitch": true, // 防止 switch 语句贯穿(即如果没有 break 语句后面不会执行)
     "module": "esnext", // 生成代码的模板标准
-    "moduleResolution": "node", // 模块解析策略,ts默认用 node 的解析策略,即相对的方式导入
+    "moduleResolution": "bundler", // 模块解析策略,使用与 Vite 对齐的非弃用 bundler 策略
     // "noUnusedLocals": false, // 检查只声明、未使用的局部变量(只提示不报错)
     // "noUnusedParameters": false, // 检查未使用的函数参数(只提示不报错)
     "resolveJsonModule": true, // 启用对 JSON 文件的导入支持
@@ -37,8 +36,8 @@
     "jsx": "react-jsx", // jsx 解析器
     // 路径映射,相对于 baseUrl
     "paths": {
-      "@/*": ["src/*"],
-      "api/*": ["src/api/*"] // 代表遇到 import {} from "api/*" 时，就从 src/api/* 中引入
+      "@/*": ["./src/*"],
+      "api/*": ["./src/api/*"] // 代表遇到 import {} from "api/*" 时，就从 src/api/* 中引入
     }
   },
   // 指定一个匹配列表(属于自动指定该路径下的所有ts相关文件)
