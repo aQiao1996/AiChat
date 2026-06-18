@@ -1,0 +1,17 @@
+.git
+.DS_Store
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+**/coverage
+*.log
+.env
+.env.*
+!docker.env.example
+tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
+.history
+.idea
+.vscode

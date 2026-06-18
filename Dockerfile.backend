@@ -1,0 +1,21 @@
+FROM node:20-bookworm-slim AS deps
+WORKDIR /app
+COPY server/package.json server/package-lock.json ./
+RUN npm ci
+
+FROM deps AS builder
+COPY server/ ./
+RUN npm run build
+
+FROM node:20-bookworm-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY server/package.json server/package-lock.json ./
+RUN npm ci --omit=dev \
+  && npm cache clean --force
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
+EXPOSE 3000
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["node", "dist/main"]

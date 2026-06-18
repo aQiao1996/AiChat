@@ -7,7 +7,7 @@ import { ChatModule } from "./chat/chat.module";
 import { AIModule } from "./ai/ai.module";
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: [`.env.${process.env.NODE_ENV}`] }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: [`.env.${process.env.NODE_ENV || "development"}`] }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({

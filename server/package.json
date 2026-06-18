@@ -22,6 +22,7 @@
     "migration:create": "npm run typeorm -- migration:create",
     "migration:generate": "npm run typeorm -- migration:generate",
     "migration:run": "npm run typeorm -- migration:run",
+    "migration:run:prod": "typeorm -d dist/data-source.js migration:run",
     "migration:revert": "npm run typeorm -- migration:revert"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "dotenv": "^16.4.5",
     "mysql2": "^3.11.0",
     "openai": "^4.95.1",
     "reflect-metadata": "^0.2.0",

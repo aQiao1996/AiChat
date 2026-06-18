@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: deepseek-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_me_strong_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ai_chat_prod}
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: deepseek-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      DATABASE_TYPE: mysql
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change_me_strong_password}
+      DATABASE_NAME: ${MYSQL_DATABASE:-ai_chat_prod}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY:-}
+      OPENAI_COMPATIBLE_API_KEY: ${OPENAI_COMPATIBLE_API_KEY:-}
+      OPENAI_COMPATIBLE_BASE_URL: ${OPENAI_COMPATIBLE_BASE_URL:-}
+      OPENAI_COMPATIBLE_MODEL: ${OPENAI_COMPATIBLE_MODEL:-gpt-5.4}
+      OPENAI_COMPATIBLE_REASONING_EFFORT: ${OPENAI_COMPATIBLE_REASONING_EFFORT:-low}
+      DATABASE_DASHSCOPE_API_KEY: ${DATABASE_DASHSCOPE_API_KEY:-}
+      DATABASE_DASHSCOPE_API_URL: ${DATABASE_DASHSCOPE_API_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+    ports:
+      - "${BACKEND_PORT:-3001}:3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        VITE_APP_BASE_URL: ${VITE_APP_BASE_URL:-/api}
+        VITE_APP_GOOGLE_RECAPTCHA_SITE_KEY: ${VITE_APP_GOOGLE_RECAPTCHA_SITE_KEY:-}
+    container_name: deepseek-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  mysql_data:
